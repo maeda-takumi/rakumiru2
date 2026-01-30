@@ -9,7 +9,11 @@
   <!-- <link rel="stylesheet" href="css/style.css"> -->
   <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
 </head>
-<body>
+<?php
+$basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
+$basePath = $basePath === '' ? '/' : $basePath . '/';
+?>
+<body data-api-base="<?= htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') ?>">
   <header class="app-header">
     <div class="container">
       <div class="brand">

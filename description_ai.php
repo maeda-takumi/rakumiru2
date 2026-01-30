@@ -103,7 +103,8 @@ try {
     ],
   ];
 
-  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=' . urlencode(GEMINI_API_KEY);
+  $model = 'models/gemini-1.5-flash';
+  $apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=' . urlencode(GEMINI_API_KEY);
   $ch = curl_init($apiUrl);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_POST, true);
@@ -120,7 +121,13 @@ try {
   curl_close($ch);
 
   if ($responseCode < 200 || $responseCode >= 300) {
-    throw new RuntimeException('Gemini APIの呼び出しに失敗しました。');
+    $detail = '';
+    if (is_string($responseBody) && $responseBody !== '') {
+      $detail = 'レスポンス: ' . mb_substr($responseBody, 0, 300);
+    }
+    $status = 'HTTP ' . $responseCode;
+    $message = 'Gemini APIの呼び出しに失敗しました。' . ($detail ? " ({$status}) {$detail}" : " ({$status})");
+    throw new RuntimeException($message);
   }
 
   $responseData = json_decode($responseBody, true);
@@ -138,5 +145,12 @@ try {
   echo json_encode(['success' => true, 'description' => $description], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
   http_response_code(500);
-  echo json_encode(['success' => false, 'message' => 'AI説明の生成に失敗しました。'], JSON_UNESCAPED_UNICODE);
+  echo json_encode(
+    [
+      'success' => false,
+      'message' => 'AI説明の生成に失敗しました。',
+      'detail' => $e->getMessage(),
+    ],
+    JSON_UNESCAPED_UNICODE
+  );
 }

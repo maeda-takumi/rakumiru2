@@ -284,6 +284,17 @@ h2{
   color: var(--muted);
 }
 
+.rank-card__description--error {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.rank-card__description--error-detail {
+  color: #b91c1c;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  word-break: break-word;
+}
 .rank-card__actions {
     display: flex;
     gap: 12px;
