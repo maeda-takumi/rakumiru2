@@ -2,6 +2,19 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/config.php';
+session_start();
+
+function renderLineOnlyMessage(): void {
+  http_response_code(403);
+  echo '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>LINEログイン</title></head><body>';
+  echo '<p>専用LINEからログインしてください</p>';
+  echo '</body></html>';
+  exit;
+}
+
+if (empty($_SESSION['line_user_id'])) {
+  renderLineOnlyMessage();
+}
 
 $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
 $error = null;
