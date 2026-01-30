@@ -218,7 +218,7 @@ include __DIR__ . '/header.php';
         $onSale = isOnSale($row['sale_start_at'], $row['sale_end_at']);
         $description = $itemDescriptions[$row['item_code']] ?? null;
       ?>
-        <article class="rank-card">
+        <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>">
           <div class="rank-card__rank">#<?= (int) $row['rank_pos'] ?></div>
           <div class="rank-card__body">
             <div class="rank-card__media">
@@ -264,7 +264,7 @@ include __DIR__ . '/header.php';
             </div>
           </div>
           <div class="rank-card__footer">
-            <div class="rank-card__description">
+            <div class="rank-card__description" data-description="<?= htmlspecialchars($description ?? '', ENT_QUOTES, 'UTF-8') ?>">
               <?php if ($description): ?>
                 <p><?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?></p>
               <?php else: ?>
@@ -272,13 +272,13 @@ include __DIR__ . '/header.php';
               <?php endif; ?>
             </div>
             <div class="rank-card__actions">
-              <button class="rank-card__button" type="button" aria-label="商品説明を入力">
+              <button class="rank-card__button" type="button" aria-label="商品説明を入力" data-action="edit-description">
                 <img src="img/input.png" alt="" />
               </button>
-              <button class="rank-card__button" type="button" aria-label="AI説明を生成">
+              <button class="rank-card__button" type="button" aria-label="AI説明を生成" data-action="ai-description">
                 <img src="img/ai.png" alt="" />
               </button>
-              <button class="rank-card__button" type="button" aria-label="説明をコピー">
+              <button class="rank-card__button" type="button" aria-label="説明をコピー" data-action="copy-description">
                 <img src="img/copy.png" alt="" />
               </button>              
             </div>
@@ -299,6 +299,20 @@ include __DIR__ . '/header.php';
     <?php endif; ?>
   <?php endif; ?>
 </section>
-
+<div class="modal" id="description-modal" aria-hidden="true">
+  <div class="modal__overlay" data-modal-close></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="description-modal-title">
+    <div class="modal__header">
+      <h3 id="description-modal-title">商品説明を編集</h3>
+      <button type="button" class="modal__close" data-modal-close aria-label="閉じる">×</button>
+    </div>
+    <textarea class="modal__textarea" id="description-modal-text" rows="6" placeholder="商品説明を入力してください"></textarea>
+    <div class="modal__actions">
+      <button type="button" class="modal__button modal__button--ghost" data-modal-close>キャンセル</button>
+      <button type="button" class="modal__button" id="description-modal-save">保存</button>
+    </div>
+    <p class="modal__status" id="description-modal-status" aria-live="polite"></p>
+  </div>
+</div>
 <?php
 include __DIR__ . '/footer.php';

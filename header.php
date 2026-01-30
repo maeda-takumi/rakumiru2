@@ -16,7 +16,7 @@
         <span class="brand__dot"></span>
         <span class="brand__title">RAKUMiRU</span>
       </div>
-      <p class="brand__subtitle">ランキング変動をスマホで見やすく</p>
+      <!-- <p class="brand__subtitle">ランキング変動をスマホで見やすく</p> -->
     </div>
   </header>
   <main class="container">
