@@ -5,7 +5,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>楽天ランキング差分ビューア</title>
+  <title>RAKUMiRU</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
 </head>
@@ -14,7 +14,7 @@
     <div class="container">
       <div class="brand">
         <span class="brand__dot"></span>
-        <span class="brand__title">楽天ランキング差分ビューア</span>
+        <span class="brand__title">RAKUMiRU</span>
       </div>
       <p class="brand__subtitle">ランキング変動をスマホで見やすく</p>
     </div>

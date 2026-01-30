@@ -25,7 +25,6 @@ $latestDate = null;
 $previousDate = null;
 $rankings = [];
 $previousMap = [];
-$newEntry = null;
 $dropouts = [];
 
 if ($pdo) {
@@ -54,7 +53,7 @@ if ($pdo) {
          JOIN items i ON rd.item_code = i.item_code
          WHERE rd.genre_id = :genre AND rd.captured_date = :latest
          ORDER BY rd.rank_pos ASC
-         LIMIT 10"
+         LIMIT 30"
       );
       $stmt->execute(['genre' => $selectedGenre, 'latest' => $latestDate]);
       $rankings = $stmt->fetchAll();
@@ -71,12 +70,6 @@ if ($pdo) {
         }
       }
 
-      foreach ($rankings as $row) {
-        if (!isset($previousMap[$row['item_code']])) {
-          $newEntry = $row;
-          break;
-        }
-      }
 
       if ($previousDate && $previousMap) {
         $currentCodes = array_column($rankings, 'item_code');
@@ -174,12 +167,6 @@ include __DIR__ . '/header.php';
   <?php elseif (!$latestDate): ?>
     <p class="notice">このジャンルのランキングデータがまだありません。</p>
   <?php else: ?>
-    <?php if ($newEntry): ?>
-      <div class="callout">
-        <span class="callout__title">初ランクイン</span>
-        <span class="callout__text"><?= htmlspecialchars($newEntry['item_name'], ENT_QUOTES, 'UTF-8') ?></span>
-      </div>
-    <?php endif; ?>
 
     <div class="ranking-list">
       <?php foreach ($rankings as $row):
@@ -200,7 +187,7 @@ include __DIR__ . '/header.php';
               <?php endif; ?>
             </div>
             <div class="rank-card__info">
-              <a class="rank-card__title" href="<?= htmlspecialchars($row['item_url'] ?? '#', ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
+              <a class="rank-card__title" href="<?= htmlspecialchars($row['item_url'] ?? '#', ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" title="<?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>">
                 <?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>
               </a>
               <p class="rank-card__shop"><?= htmlspecialchars($row['shop_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>
