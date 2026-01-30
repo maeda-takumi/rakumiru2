@@ -202,15 +202,17 @@ try {
 
   $upsertRank = $pdo->prepare("
     INSERT INTO rank_daily
-      (captured_date, captured_at, genre_id, rank_pos, item_code, price, review_count, point_rate)
+      (captured_date, captured_at, genre_id, rank_pos, item_code, price, review_count, point_rate, sale_start_at, sale_end_at)
     VALUES
-      (:captured_date, :captured_at, :genre_id, :rank_pos, :item_code, :price, :review_count, :point_rate)
+      (:captured_date, :captured_at, :genre_id, :rank_pos, :item_code, :price, :review_count, :point_rate, :sale_start_at, :sale_end_at)
     ON DUPLICATE KEY UPDATE
       captured_at=VALUES(captured_at),
       item_code=VALUES(item_code),
       price=VALUES(price),
       review_count=VALUES(review_count),
-      point_rate=VALUES(point_rate)
+      point_rate=VALUES(point_rate),
+      sale_start_at=VALUES(sale_start_at),
+      sale_end_at=VALUES(sale_end_at)
   ");
 
   $updateCursor = $pdo->prepare("
@@ -327,6 +329,17 @@ try {
       $reviewCount = isset($item['reviewCount']) ? (int)$item['reviewCount'] : null;
       $pointRate = isset($item['pointRate']) ? (int)$item['pointRate'] : null;
 
+      $saleStartAt = null;
+      if (!empty($item['startTime'])) {
+        $saleStartTs = strtotime((string)$item['startTime']);
+        $saleStartAt = ($saleStartTs !== false) ? date('Y-m-d H:i:s', $saleStartTs) : null;
+      }
+      $saleEndAt = null;
+      if (!empty($item['endTime'])) {
+        $saleEndTs = strtotime((string)$item['endTime']);
+        $saleEndAt = ($saleEndTs !== false) ? date('Y-m-d H:i:s', $saleEndTs) : null;
+      }
+
       // upsert items
       $upsertItem->execute([
         ':item_code' => $itemCode,
@@ -352,6 +365,8 @@ try {
         ':price'         => $price,
         ':review_count'  => $reviewCount,
         ':point_rate'    => $pointRate,
+        ':sale_start_at' => $saleStartAt,
+        ':sale_end_at'   => $saleEndAt,
       ]);
     }
 
