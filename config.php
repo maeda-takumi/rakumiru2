@@ -4,4 +4,6 @@
     define('DB_USER', 'ss911157_sedo');
     define('DB_PASS', 'sedorisedori');
     define('DB_CHARSET', 'utf8mb4');
+    define('LINE_CHANNEL_ID', '2009012040');
+    define('LINE_CHANNEL_SECRET', 'f7984afbe1a8f69b59610142c0d0f729');
 ?>
