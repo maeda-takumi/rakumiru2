@@ -242,9 +242,7 @@ include __DIR__ . '/header.php';
             </div>
           </div>
         
-          <?php if ($description): ?>
-            <p class="rank-card__description"><?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?></p>
-          <?php endif; ?>          
+     
           <div class="rank-card__stats">
             <div>
               <span class="stat__label">ランク変動</span>

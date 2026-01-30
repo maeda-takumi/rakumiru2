@@ -90,8 +90,51 @@
         }
         return;
       }
-      if (action === 'ai-description') {
-        window.alert('AI説明は準備中です。');
+
+      if (action === 'ai-description' && card) {
+        const itemCode = card.dataset.itemCode;
+        if (!itemCode) {
+          window.alert('商品情報が取得できません。');
+          return;
+        }
+        const descriptionEl = card.querySelector('.rank-card__description');
+        const previousHtml = descriptionEl?.innerHTML ?? '';
+        const previousDescription = descriptionEl?.dataset.description ?? '';
+        actionButton.setAttribute('aria-busy', 'true');
+        actionButton.disabled = true;
+        if (descriptionEl) {
+          descriptionEl.innerHTML = '<p class="rank-card__description--empty">AIで説明文を生成中...</p>';
+        }
+        fetch('description_ai.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({ item_code: itemCode }),
+        })
+          .then(async (response) => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) {
+              throw new Error(data.message || 'AI説明の生成に失敗しました。');
+            }
+            const description = (data.description ?? '').trim();
+            if (!description) {
+              throw new Error('AI説明が取得できませんでした。');
+            }
+            if (descriptionEl) {
+              descriptionEl.dataset.description = description;
+              descriptionEl.innerHTML = `<p>${escapeHtml(description).replace(/\n/g, '<br>')}</p>`;
+            }
+          })
+          .catch((error) => {
+            if (descriptionEl) {
+              descriptionEl.dataset.description = previousDescription;
+              descriptionEl.innerHTML = previousHtml;
+            }
+            window.alert(error instanceof Error ? error.message : 'AI説明の生成に失敗しました。');
+          })
+          .finally(() => {
+            actionButton.removeAttribute('aria-busy');
+            actionButton.disabled = false;
+          });
       }
     }
 

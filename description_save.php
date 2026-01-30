@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/description_helpers.php';
 session_start();
 
 header('Content-Type: application/json; charset=UTF-8');
@@ -26,32 +26,16 @@ if ($description === null) {
 }
 
 try {
-  $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
-  $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-  ]);
-
-  $stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
-  $stmt->execute(['line_user_id' => $_SESSION['line_user_id']]);
-  $userId = $stmt->fetchColumn();
-
+  $pdo = createPdo();
+  $userId = fetchUserId($pdo, $_SESSION['line_user_id']);
   if (!$userId) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'ユーザー情報が取得できません。'], JSON_UNESCAPED_UNICODE);
     exit;
   }
 
-  $stmt = $pdo->prepare(
-    'INSERT INTO item_descriptions (user_id, item_code, description, created_at, updated_at)
-     VALUES (:user_id, :item_code, :description, NOW(), NOW())
-     ON DUPLICATE KEY UPDATE description = VALUES(description), updated_at = NOW()'
-  );
-  $stmt->execute([
-    'user_id' => $userId,
-    'item_code' => $itemCode,
-    'description' => $description,
-  ]);
+  saveItemDescription($pdo, (int) $userId, $itemCode, $description);
+
 
   echo json_encode(['success' => true], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
