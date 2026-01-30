@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: localhost
--- 生成日時: 2026 年 1 月 30 日 10:52
+-- 生成日時: 2026 年 1 月 30 日 11:46
 -- サーバのバージョン： 10.5.22-MariaDB-log
 -- PHP のバージョン: 8.0.30
 
@@ -87,7 +87,9 @@ CREATE TABLE `rank_daily` (
   `item_code` varchar(128) NOT NULL,
   `price` int(10) UNSIGNED DEFAULT NULL,
   `review_count` int(10) UNSIGNED DEFAULT NULL,
-  `point_rate` smallint(5) UNSIGNED DEFAULT NULL
+  `point_rate` smallint(5) UNSIGNED DEFAULT NULL,
+  `sale_start_at` datetime DEFAULT NULL,
+  `sale_end_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
