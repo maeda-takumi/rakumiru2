@@ -1,0 +1,285 @@
+:root {
+  color-scheme: light;
+  --primary: #ffffff;
+  --accent: #e53935;
+  --text: #1f1f1f;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --panel: #f9fafb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  background: var(--primary);
+  color: var(--text);
+}
+
+.container {
+  width: min(960px, 100%);
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
+.app-header {
+  background: var(--primary);
+  border-bottom: 1px solid var(--border);
+  padding: 24px 0 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand__dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.brand__title {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.brand__subtitle {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+main {
+  padding: 24px 0 48px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.panel__header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.panel__meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.genre-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.genre-form label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+select {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-size: 1rem;
+}
+
+.notice {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px dashed var(--border);
+  color: var(--muted);
+}
+
+.notice--error {
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+.callout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(229, 57, 53, 0.2);
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.callout__title {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.ranking-list {
+  display: grid;
+  gap: 16px;
+  max-height: 620px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.rank-card {
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  padding: 16px;
+  display: grid;
+  gap: 14px;
+}
+
+.rank-card__rank {
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.rank-card__body {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 12px;
+}
+
+.rank-card__media img {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.rank-card__placeholder {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.rank-card__title {
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.rank-card__shop {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.rank-card__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.tag--sale {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.rank-card__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+  font-size: 0.85rem;
+}
+
+.stat__label {
+  display: block;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.stat__value {
+  font-weight: 600;
+}
+
+.stat__value--up {
+  color: #16a34a;
+}
+
+.stat__value--down {
+  color: #dc2626;
+}
+
+.stat__diff {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.dropout {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px dashed var(--border);
+}
+
+.dropout h3 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.dropout ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.app-footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0 28px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .rank-card__body {
+    grid-template-columns: 64px 1fr;
+  }
+
+  .rank-card__media img,
+  .rank-card__placeholder {
+    width: 64px;
+    height: 64px;
+  }
+}
