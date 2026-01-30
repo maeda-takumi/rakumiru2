@@ -58,7 +58,19 @@ CREATE TABLE `items` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+--
+-- テーブルの構造 `item_descriptions`
+--
 
+CREATE TABLE `item_descriptions` (
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `item_code` varchar(128) NOT NULL,
+  `description` mediumtext NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 --
 -- テーブルの構造 `job_state`
 --
@@ -128,6 +140,13 @@ ALTER TABLE `items`
   ADD PRIMARY KEY (`item_code`),
   ADD KEY `idx_last_seen` (`last_seen_at`),
   ADD KEY `idx_shop` (`shop_code`);
+--
+-- テーブルのインデックス `item_descriptions`
+--
+ALTER TABLE `item_descriptions`
+  ADD PRIMARY KEY (`user_id`,`item_code`),
+  ADD KEY `idx_item_descriptions_user` (`user_id`),
+  ADD KEY `idx_item_descriptions_item` (`item_code`);
 
 --
 -- テーブルのインデックス `job_state`
@@ -162,6 +181,12 @@ ALTER TABLE `rank_stats_30d`
 ALTER TABLE `rank_daily`
   ADD CONSTRAINT `fk_rank_daily_genre` FOREIGN KEY (`genre_id`) REFERENCES `genres` (`genre_id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_rank_daily_item` FOREIGN KEY (`item_code`) REFERENCES `items` (`item_code`) ON UPDATE CASCADE;
+--
+-- テーブルの制約 `item_descriptions`
+--
+ALTER TABLE `item_descriptions`
+  ADD CONSTRAINT `fk_item_desc_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_item_desc_item` FOREIGN KEY (`item_code`) REFERENCES `items` (`item_code`) ON UPDATE CASCADE;
 
 --
 -- テーブルの制約 `rank_stats_30d`

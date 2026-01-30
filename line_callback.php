@@ -42,9 +42,7 @@ function linePost(string $url, array $fields): array {
   return is_array($decoded) ? $decoded : [];
 }
 
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$redirectUri = sprintf('%s://%s/line_callback.php', $scheme, $host);
+$redirectUri = LINE_REDIRECT_URI;
 
 $tokenResponse = linePost('https://api.line.me/oauth2/v2.1/token', [
   'grant_type' => 'authorization_code',

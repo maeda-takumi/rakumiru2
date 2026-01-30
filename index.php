@@ -19,6 +19,8 @@ if (empty($_SESSION['line_user_id'])) {
 $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
 $error = null;
 $pdo = null;
+$userId = null;
+$itemDescriptions = [];
 
 try {
   $pdo = new PDO($dsn, DB_USER, DB_PASS, [
@@ -41,6 +43,10 @@ $previousMap = [];
 $dropouts = [];
 
 if ($pdo) {
+  $stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
+  $stmt->execute(['line_user_id' => $_SESSION['line_user_id']]);
+  $userId = $stmt->fetchColumn();
+
   $parents = $pdo->query("SELECT genre_id, genre_name FROM genres WHERE depth = 0 AND is_active = 1 ORDER BY genre_name")->fetchAll();
 
   if ($selectedParent) {
@@ -92,6 +98,28 @@ if ($pdo) {
           }
         }
       }
+
+      if ($userId && $rankings) {
+        $placeholders = [];
+        $params = ['user_id' => $userId];
+        foreach ($rankings as $index => $row) {
+          $placeholder = ':item' . $index;
+          $placeholders[] = $placeholder;
+          $params['item' . $index] = $row['item_code'];
+        }
+
+        $sql = sprintf(
+          'SELECT item_code, description FROM item_descriptions WHERE user_id = :user_id AND item_code IN (%s) ORDER BY updated_at DESC',
+          implode(', ', $placeholders)
+        );
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        foreach ($stmt->fetchAll() as $row) {
+          if (!isset($itemDescriptions[$row['item_code']])) {
+            $itemDescriptions[$row['item_code']] = $row['description'];
+          }
+        }
+      } 
     }
   }
 }
@@ -188,6 +216,7 @@ include __DIR__ . '/header.php';
         $priceDiff = $prev ? formatDiff((int) $row['price'], (int) $prev['price']) : '—';
         $reviewDiff = $prev ? formatDiff((int) $row['review_count'], (int) $prev['review_count']) : '—';
         $onSale = isOnSale($row['sale_start_at'], $row['sale_end_at']);
+        $description = $itemDescriptions[$row['item_code']] ?? null;
       ?>
         <article class="rank-card">
           <div class="rank-card__rank">#<?= (int) $row['rank_pos'] ?></div>
@@ -212,6 +241,10 @@ include __DIR__ . '/header.php';
               </div>
             </div>
           </div>
+        
+          <?php if ($description): ?>
+            <p class="rank-card__description"><?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?></p>
+          <?php endif; ?>          
           <div class="rank-card__stats">
             <div>
               <span class="stat__label">ランク変動</span>
@@ -230,6 +263,26 @@ include __DIR__ . '/header.php';
               <span class="stat__diff"><?= htmlspecialchars($reviewDiff, ENT_QUOTES, 'UTF-8') ?></span>
             </div>
           </div>
+          <div class="rank-card__footer">
+            <div class="rank-card__description">
+              <?php if ($description): ?>
+                <p><?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?></p>
+              <?php else: ?>
+                <p class="rank-card__description--empty">商品説明を入力してください</p>
+              <?php endif; ?>
+            </div>
+            <div class="rank-card__actions">
+              <button class="rank-card__button" type="button" aria-label="商品説明を入力">
+                <img src="img/input.png" alt="" />
+              </button>
+              <button class="rank-card__button" type="button" aria-label="AI説明を生成">
+                <img src="img/ai.png" alt="" />
+              </button>
+              <button class="rank-card__button" type="button" aria-label="説明をコピー">
+                <img src="img/copy.png" alt="" />
+              </button>              
+            </div>
+          </div>            
         </article>
       <?php endforeach; ?>
     </div>
