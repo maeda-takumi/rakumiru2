@@ -2,7 +2,7 @@
   color-scheme: light;
   --primary: #ffffff;
   --accent: #e53935;
-  --text: #111827;
+  --text: #5c5c5c;
   --muted: #6b7280;
   --border: rgba(15, 23, 42, 0.08);
   --panel: #ffffff;
@@ -210,7 +210,7 @@ select:disabled {
 
 h2{
   margin: 0px;
-  color: var(--muted);
+  color: var(--text);
 }
 .rank-card {
   background: #fff;
@@ -527,6 +527,89 @@ h2{
   font-size: 0.95rem;
 }
 
+.genre-slider {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.genre-slider__controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.genre-slider__button {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text);
+}
+
+.genre-slider__button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.genre-slider__status {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.genre-slider__label {
+  font-weight: 600;
+}
+
+.genre-slider__count {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.genre-slider__viewport {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.genre-slider__track {
+  display: flex;
+  transition: transform 0.35s ease;
+  will-change: transform;
+}
+
+.genre-slide {
+  flex: 0 0 100%;
+  padding: 8px 0;
+}
+
+.genre-slide .genre-section {
+  margin-top: 0;
+}
+
+.genre-slider__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.genre-slider__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: var(--border);
+  cursor: pointer;
+}
+
+.genre-slider__dot.is-active {
+  background: var(--accent);
+}
 .genre-section {
   display: grid;
   gap: 16px;
@@ -580,6 +663,18 @@ h2{
 }
 
 @media (max-width: 640px) {
+  .genre-slider__controls {
+    gap: 8px;
+  }
+
+  .genre-slider__label {
+    font-size: 0.95rem;
+  }
+
+  .genre-slider__button {
+    width: 32px;
+    height: 32px;
+  }
   .panel__header--settings {
     flex-direction: column;
     align-items: flex-start;

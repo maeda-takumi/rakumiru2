@@ -7,6 +7,7 @@
   const modalStatus = document.getElementById('description-modal-status');
   const settingsModal = document.getElementById('settings-modal');
   const settingsOpen = document.getElementById('settings-open');
+  const genreSlider = document.querySelector('[data-genre-slider]');
   const apiBase = document.body?.dataset.apiBase || '/';
   let activeCard = null;
 
@@ -65,6 +66,70 @@
 
   settingsOpen?.addEventListener('click', openSettingsModal);
 
+  if (genreSlider) {
+    const track = genreSlider.querySelector('[data-genre-track]');
+    const slides = Array.from(genreSlider.querySelectorAll('[data-genre-slide]'));
+    const prevButton = genreSlider.querySelector('[data-genre-prev]');
+    const nextButton = genreSlider.querySelector('[data-genre-next]');
+    const label = genreSlider.querySelector('[data-genre-label]');
+    const countLabel = genreSlider.querySelector('[data-genre-count-label]');
+    const dots = Array.from(genreSlider.querySelectorAll('[data-genre-dot]'));
+    let currentIndex = 0;
+
+    const updateSlider = () => {
+      if (!track || slides.length === 0) return;
+      track.style.transform = `translateX(${-currentIndex * 100}%)`;
+      const currentSlide = slides[currentIndex];
+      if (label && currentSlide) {
+        label.textContent = currentSlide.dataset.genreName ?? '';
+      }
+      if (countLabel) {
+        countLabel.textContent = `${currentIndex + 1} / ${slides.length}`;
+      }
+      if (prevButton) {
+        prevButton.disabled = currentIndex === 0;
+      }
+      if (nextButton) {
+        nextButton.disabled = currentIndex === slides.length - 1;
+      }
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('is-active', index === currentIndex);
+        dot.setAttribute('aria-selected', index === currentIndex ? 'true' : 'false');
+      });
+    };
+
+    const goToIndex = (index) => {
+      if (index < 0 || index >= slides.length) return;
+      currentIndex = index;
+      updateSlider();
+    };
+
+    prevButton?.addEventListener('click', () => {
+      goToIndex(currentIndex - 1);
+    });
+
+    nextButton?.addEventListener('click', () => {
+      goToIndex(currentIndex + 1);
+    });
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        const index = Number(dot.dataset.genreIndex);
+        if (!Number.isNaN(index)) {
+          goToIndex(index);
+        }
+      });
+    });
+
+    if (slides.length <= 1) {
+      prevButton?.setAttribute('aria-hidden', 'true');
+      nextButton?.setAttribute('aria-hidden', 'true');
+      dots.forEach((dot) => dot.setAttribute('aria-hidden', 'true'));
+      countLabel?.setAttribute('aria-hidden', 'true');
+    }
+
+    updateSlider();
+  }
   document.addEventListener('click', (event) => {
     const target = event.target;
     if (!(target instanceof Element)) return;

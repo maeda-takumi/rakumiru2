@@ -221,118 +221,139 @@ include __DIR__ . '/header.php';
   <?php if (!$selectedGenreIds): ?>
     <p class="notice">設定からジャンルを選ぶとランキング差分が表示されます。</p>
   <?php else: ?>
-    <?php foreach ($genreData as $genre): ?>
-      <div class="genre-section">
-        <div class="genre-section__header">
-          <h3 class="genre-section__title"><?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?></h3>
-          <?php if ($genre['latest_date']): ?>
-            <div class="panel__meta">
-              <span>最新: <?= htmlspecialchars($genre['latest_date'], ENT_QUOTES, 'UTF-8') ?></span>
-              <?php if ($genre['previous_date']): ?>
-                <span>比較: <?= htmlspecialchars($genre['previous_date'], ENT_QUOTES, 'UTF-8') ?></span>
-              <?php else: ?>
-                <span>比較データなし</span>
-              <?php endif; ?>
-            </div>
-          <?php endif; ?>
+    <div class="genre-slider" data-genre-slider data-genre-count="<?= count($genreData) ?>">
+      <div class="genre-slider__controls">
+        <button class="genre-slider__button" type="button" data-genre-prev aria-label="前のジャンル">‹</button>
+        <div class="genre-slider__status">
+          <span class="genre-slider__label" data-genre-label><?= htmlspecialchars($genreData[0]['genre_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+          <span class="genre-slider__count" data-genre-count-label></span>
         </div>
-
-        <?php if (!$genre['latest_date']): ?>
-          <p class="notice">このジャンルのランキングデータがまだありません。</p>
-        <?php elseif ($filterDropoutOnly && !$genre['dropouts']): ?>
-          <p class="notice">ランク外落ち商品がありません。</p>
-        <?php elseif (!$genre['display_rankings'] && !$filterDropoutOnly): ?>
-          <p class="notice">条件に合う商品がありません。</p>
-        <?php else: ?>
-          <?php if ($genre['display_rankings']): ?>
-            <div class="ranking-list">
-              <?php foreach ($genre['display_rankings'] as $row):
-                $prev = $genre['previous_map'][$row['item_code']] ?? null;
-                $rankChange = $prev ? formatRankChange((int) $row['rank_pos'], (int) $prev['rank_pos']) : 'NEW';
-                $priceDiff = $prev ? formatDiff((int) $row['price'], (int) $prev['price']) : '—';
-                $reviewDiff = $prev ? formatDiff((int) $row['review_count'], (int) $prev['review_count']) : '—';
-                $onSale = isOnSale($row['sale_start_at'], $row['sale_end_at']);
-                $description = $genre['item_descriptions'][$row['item_code']] ?? null;
-              ?>
-                <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>">
-                  <div class="rank-card__rank">#<?= (int) $row['rank_pos'] ?></div>
-                  <div class="rank-card__body">
-                    <div class="rank-card__media">
-                      <?php if (!empty($row['image_url'])): ?>
-                        <img src="<?= htmlspecialchars($row['image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($row['item_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                      <?php else: ?>
-                        <div class="rank-card__placeholder">No Image</div>
-                      <?php endif; ?>
-                    </div>
-                    <div class="rank-card__info">
-                      <a class="rank-card__title" href="<?= htmlspecialchars($row['item_url'] ?? '#', ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" title="<?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>">
-                        <?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>
-                      </a>
-                      <p class="rank-card__shop"><?= htmlspecialchars($row['shop_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>
-                      <div class="rank-card__meta">
-                        <span class="tag <?= $onSale ? 'tag--sale' : '' ?>">
-                          <?= $onSale ? 'セール中' : '通常' ?>
-                        </span>
-                        <span class="tag">ポイント <?= (int) ($row['point_rate'] ?? 0) ?>%</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="rank-card__stats">
-                    <div>
-                      <span class="stat__label">ランク変動</span>
-                      <span class="stat__value <?= strpos($rankChange, '↑') !== false ? 'stat__value--up' : (strpos($rankChange, '↓') !== false ? 'stat__value--down' : '') ?>">
-                        <?= htmlspecialchars($rankChange, ENT_QUOTES, 'UTF-8') ?>
-                      </span>
-                    </div>
-                    <div>
-                      <span class="stat__label">価格</span>
-                      <span class="stat__value">¥<?= number_format((int) ($row['price'] ?? 0)) ?></span>
-                      <span class="stat__diff"><?= htmlspecialchars($priceDiff, ENT_QUOTES, 'UTF-8') ?></span>
-                    </div>
-                    <div>
-                      <span class="stat__label">レビュー</span>
-                      <span class="stat__value"><?= number_format((int) ($row['review_count'] ?? 0)) ?></span>
-                      <span class="stat__diff"><?= htmlspecialchars($reviewDiff, ENT_QUOTES, 'UTF-8') ?></span>
-                    </div>
-                  </div>
-                  <div class="rank-card__footer">
-                    <div class="rank-card__description" data-description="<?= htmlspecialchars($description ?? '', ENT_QUOTES, 'UTF-8') ?>">
-                      <?php if ($description): ?>
-                        <p><?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?></p>
-                      <?php else: ?>
-                        <p class="rank-card__description--empty">商品説明を入力してください</p>
-                      <?php endif; ?>
-                    </div>
-                    <div class="rank-card__actions">
-                      <button class="rank-card__button" type="button" aria-label="AI説明を生成" data-action="ai-description">
-                        <img src="img/ai.png" alt="" />
-                      </button>
-                      <button class="rank-card__button" type="button" aria-label="商品説明を入力" data-action="edit-description">
-                        <img src="img/input.png" alt="" />
-                      </button>
-                      <button class="rank-card__button" type="button" aria-label="説明をコピー" data-action="copy-description">
-                        <img src="img/copy.png" alt="" />
-                      </button>              
-                    </div>
-                  </div>            
-                </article>
-              <?php endforeach; ?>
-            </div>
-          <?php endif; ?>
-
-          <?php if ($genre['previous_date'] && $genre['dropouts']): ?>
-            <div class="dropout">
-              <h3>ランク外になった商品</h3>
-              <ul>
-                <?php foreach ($genre['dropouts'] as $drop): ?>
-                  <li>前日 #<?= (int) $drop['rank_pos'] ?> / <?= htmlspecialchars($drop['item_code'], ENT_QUOTES, 'UTF-8') ?></li>
-                <?php endforeach; ?>
-              </ul>
-            </div>
-          <?php endif; ?>
-        <?php endif; ?>
+        <button class="genre-slider__button" type="button" data-genre-next aria-label="次のジャンル">›</button>
       </div>
-    <?php endforeach; ?>
+      <div class="genre-slider__viewport">
+        <div class="genre-slider__track" data-genre-track>
+          <?php foreach ($genreData as $genre): ?>
+            <div class="genre-slide" data-genre-slide data-genre-name="<?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?>">
+              <div class="genre-section">
+                <div class="genre-section__header">
+                  <h3 class="genre-section__title"><?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?></h3>
+                  <?php if ($genre['latest_date']): ?>
+                    <div class="panel__meta">
+                      <span>最新: <?= htmlspecialchars($genre['latest_date'], ENT_QUOTES, 'UTF-8') ?></span>
+                      <?php if ($genre['previous_date']): ?>
+                        <span>比較: <?= htmlspecialchars($genre['previous_date'], ENT_QUOTES, 'UTF-8') ?></span>
+                      <?php else: ?>
+                        <span>比較データなし</span>
+                      <?php endif; ?>
+                    </div>
+                  <?php endif; ?>
+                </div>
+
+                <?php if (!$genre['latest_date']): ?>
+                  <p class="notice">このジャンルのランキングデータがまだありません。</p>
+                <?php elseif ($filterDropoutOnly && !$genre['dropouts']): ?>
+                  <p class="notice">ランク外落ち商品がありません。</p>
+                <?php elseif (!$genre['display_rankings'] && !$filterDropoutOnly): ?>
+                  <p class="notice">条件に合う商品がありません。</p>
+                <?php else: ?>
+                  <?php if ($genre['display_rankings']): ?>
+                    <div class="ranking-list">
+                      <?php foreach ($genre['display_rankings'] as $row):
+                        $prev = $genre['previous_map'][$row['item_code']] ?? null;
+                        $rankChange = $prev ? formatRankChange((int) $row['rank_pos'], (int) $prev['rank_pos']) : 'NEW';
+                        $priceDiff = $prev ? formatDiff((int) $row['price'], (int) $prev['price']) : '—';
+                        $reviewDiff = $prev ? formatDiff((int) $row['review_count'], (int) $prev['review_count']) : '—';
+                        $onSale = isOnSale($row['sale_start_at'], $row['sale_end_at']);
+                        $description = $genre['item_descriptions'][$row['item_code']] ?? null;
+                      ?>
+                        <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>">
+                          <div class="rank-card__rank">#<?= (int) $row['rank_pos'] ?></div>
+                          <div class="rank-card__body">
+                            <div class="rank-card__media">
+                              <?php if (!empty($row['image_url'])): ?>
+                                <img src="<?= htmlspecialchars($row['image_url'], ENT_QUOTES, 'UTF-8') ?>" alt="<?= htmlspecialchars($row['item_name'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                              <?php else: ?>
+                                <div class="rank-card__placeholder">No Image</div>
+                              <?php endif; ?>
+                            </div>
+                            <div class="rank-card__info">
+                              <a class="rank-card__title" href="<?= htmlspecialchars($row['item_url'] ?? '#', ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" title="<?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>">
+                                <?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>
+                              </a>
+                              <p class="rank-card__shop"><?= htmlspecialchars($row['shop_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>
+                              <div class="rank-card__meta">
+                                <span class="tag <?= $onSale ? 'tag--sale' : '' ?>">
+                                  <?= $onSale ? 'セール中' : '通常' ?>
+                                </span>
+                                <span class="tag">ポイント <?= (int) ($row['point_rate'] ?? 0) ?>%</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="rank-card__stats">
+                            <div>
+                              <span class="stat__label">ランク変動</span>
+                              <span class="stat__value <?= strpos($rankChange, '↑') !== false ? 'stat__value--up' : (strpos($rankChange, '↓') !== false ? 'stat__value--down' : '') ?>">
+                                <?= htmlspecialchars($rankChange, ENT_QUOTES, 'UTF-8') ?>
+                              </span>
+                            </div>
+                            <div>
+                              <span class="stat__label">価格</span>
+                              <span class="stat__value">¥<?= number_format((int) ($row['price'] ?? 0)) ?></span>
+                              <span class="stat__diff"><?= htmlspecialchars($priceDiff, ENT_QUOTES, 'UTF-8') ?></span>
+                            </div>
+                            <div>
+                              <span class="stat__label">レビュー</span>
+                              <span class="stat__value"><?= number_format((int) ($row['review_count'] ?? 0)) ?></span>
+                              <span class="stat__diff"><?= htmlspecialchars($reviewDiff, ENT_QUOTES, 'UTF-8') ?></span>
+                            </div>
+                          </div>
+                          <div class="rank-card__footer">
+                            <div class="rank-card__description" data-description="<?= htmlspecialchars($description ?? '', ENT_QUOTES, 'UTF-8') ?>">
+                              <?php if ($description): ?>
+                                <p><?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?></p>
+                              <?php else: ?>
+                                <p class="rank-card__description--empty">商品説明を入力してください</p>
+                              <?php endif; ?>
+                            </div>
+                            <div class="rank-card__actions">
+                              <button class="rank-card__button" type="button" aria-label="AI説明を生成" data-action="ai-description">
+                                <img src="img/ai.png" alt="" />
+                              </button>
+                              <button class="rank-card__button" type="button" aria-label="商品説明を入力" data-action="edit-description">
+                                <img src="img/input.png" alt="" />
+                              </button>
+                              <button class="rank-card__button" type="button" aria-label="説明をコピー" data-action="copy-description">
+                                <img src="img/copy.png" alt="" />
+                              </button>
+                            </div>
+                          </div>
+                        </article>
+                      <?php endforeach; ?>             
+                    </div>
+                  <?php endif; ?>
+
+                  <?php if ($genre['previous_date'] && $genre['dropouts']): ?>
+                    <div class="dropout">
+                      <h3>ランク外になった商品</h3>
+                      <ul>
+                        <?php foreach ($genre['dropouts'] as $drop): ?>
+                          <li>前日 #<?= (int) $drop['rank_pos'] ?> / <?= htmlspecialchars($drop['item_code'], ENT_QUOTES, 'UTF-8') ?></li>
+                        <?php endforeach; ?>
+                      </ul>
+                    </div>
+                  <?php endif; ?>
+                <?php endif; ?>
+              </div>
+            </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+      <div class="genre-slider__dots" role="tablist" aria-label="ジャンルを切り替え">
+        <?php foreach ($genreData as $index => $genre): ?>
+          <button class="genre-slider__dot" type="button" data-genre-dot data-genre-index="<?= $index ?>" aria-label="<?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?>を表示"></button>
+        <?php endforeach; ?>
+      </div>
+    </div>
   <?php endif; ?>
 </section>
 <div class="modal" id="settings-modal" aria-hidden="true">
