@@ -719,9 +719,10 @@ h2{
 }
 
 .genre-sort__label {
-  font-size: 0.9rem;
-  color: var(--muted);
-  font-weight: 600;
+    font-size: 15px;
+    color: var(--accent);
+    font-weight: 600;
+    font-weight: bold;
 }
 
 .genre-sort__field {

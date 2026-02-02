@@ -455,7 +455,6 @@ include __DIR__ . '/header.php';
                         $description = $genre['item_descriptions'][$row['item_code']] ?? null;
                       ?>
                         <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>" data-rank-pos="<?= (int) $row['rank_pos'] ?>" data-review-count="<?= (int) ($row['review_count'] ?? 0) ?>">
-                        <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>">
                           <div class="rank-card__rank"><span><?= (int) $row['rank_pos'] ?></span></div>
                           <div class="rank-card__body">
                             <div class="rank-card__media">
