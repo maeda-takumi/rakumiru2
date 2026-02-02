@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/config.php';
 
+configureSessionCookie();
 session_start();
 
 $state = bin2hex(random_bytes(16));

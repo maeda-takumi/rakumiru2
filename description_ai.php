@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/description_helpers.php';
+configureSessionCookie();
 session_start();
 
 header('Content-Type: application/json; charset=UTF-8');
