@@ -204,7 +204,7 @@ select:disabled {
   max-height: 720px;
   overflow-y: auto;
   /* padding-right: 4px; */
-  /* padding-top: 20px; */
+  padding-top: 20px;
   padding-bottom: 400px;
   /* margin-top: 20px; */
 }
@@ -214,27 +214,67 @@ h2{
   color: var(--text);
 }
 .rank-card {
-  background: #fff;
-  border-radius: 16px;
-  border: 2px solid rgba(15, 23, 42, 0.04);
-  padding: 16px;
-  display: grid;
-  gap: 14px;
-  /* box-shadow: var(--shadow-soft); */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  box-sizing: border-box;
+    background: #fff;
+    border-radius: 16px;
+    border: 2px solid rgba(15, 23, 42, 0.04);
+    padding: 16px;
+    position: relative;
+    display: grid;
+    gap: 14px;
+    /* box-shadow: var(--shadow-soft); */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
     /* margin: 0 20px; */
+    padding-top: 55px;
 }
 .rank-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-float);
 }
 .rank-card__rank {
-  font-weight: 700;
-  color: var(--accent);
+    position: absolute;
+    top: 13px;
+    left: -10px;
+    display: inline-block;
+    padding: 6px 14px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 0 4px 4px 0;
+    font-weight: 700;
+    line-height: 1.2;
+    box-shadow: 0 6px 12px rgba(229, 57, 53, 0.25);
+    width: 75px;
 }
 
+.rank-card__rank span {
+    /* position: relative; */
+    z-index: 1;
+    width: 100%;
+    display: block;
+    text-align: right;
+}
+.rank-card__rank::before {
+  content: "";
+  position: absolute;
+  left: -12px;
+  top: 0;
+  width: 0;
+  height: 0;
+  border-top: 16px solid transparent;
+  border-bottom: 16px solid transparent;
+  border-right: 12px solid var(--accent);
+}
+
+.rank-card__rank::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0;
+  height: 0;
+  border-top: 6px solid rgba(0, 0, 0, 0.18);
+  border-left: 8px solid transparent;
+}
 .rank-card__body {
   display: flex;
   /* grid-template-columns: 80px 1fr; */
