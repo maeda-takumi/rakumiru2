@@ -172,12 +172,17 @@ if ($pdo) {
     $previousMap = [];
     $dropouts = [];
     $itemDescriptions = [];
+    $latestCapturedAt = null;
+    $previousCapturedAt = null;
     
     $stmt = $pdo->prepare("SELECT MAX(captured_date) AS latest_date FROM rank_daily WHERE genre_id = :genre");
     $stmt->execute(['genre' => $genreId]);
     $latestDate = $stmt->fetchColumn();
 
     if ($latestDate) {
+      $stmt = $pdo->prepare("SELECT MAX(captured_at) AS latest_at FROM rank_daily WHERE genre_id = :genre AND captured_date = :latest");
+      $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
+      $latestCapturedAt = $stmt->fetchColumn();
       $stmt = $pdo->prepare("SELECT MAX(captured_date) AS prev_date FROM rank_daily WHERE genre_id = :genre AND captured_date < :latest");
       $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
       $previousDate = $stmt->fetchColumn();
@@ -187,20 +192,23 @@ if ($pdo) {
                 i.item_name, i.item_url, i.image_url, i.shop_name
          FROM rank_daily rd
          JOIN items i ON rd.item_code = i.item_code
-         WHERE rd.genre_id = :genre AND rd.captured_date = :latest
+         WHERE rd.genre_id = :genre AND rd.captured_date = :latest AND rd.captured_at = :latest_at
          ORDER BY rd.rank_pos ASC
          LIMIT 30"
       );
-      $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
+      $stmt->execute(['genre' => $genreId, 'latest' => $latestDate, 'latest_at' => $latestCapturedAt]);
       $rankings = $stmt->fetchAll();
 
       if ($previousDate) {
+        $stmt = $pdo->prepare("SELECT MAX(captured_at) AS prev_at FROM rank_daily WHERE genre_id = :genre AND captured_date = :prev");
+        $stmt->execute(['genre' => $genreId, 'prev' => $previousDate]);
+        $previousCapturedAt = $stmt->fetchColumn();
         $stmt = $pdo->prepare(
           "SELECT item_code, rank_pos, price, review_count
            FROM rank_daily
-           WHERE genre_id = :genre AND captured_date = :prev"
+           WHERE genre_id = :genre AND captured_date = :prev AND captured_at = :prev_at"
         );
-        $stmt->execute(['genre' => $genreId, 'prev' => $previousDate]);
+        $stmt->execute(['genre' => $genreId, 'prev' => $previousDate, 'prev_at' => $previousCapturedAt]);
         foreach ($stmt->fetchAll() as $row) {
           $previousMap[$row['item_code']] = $row;
         }

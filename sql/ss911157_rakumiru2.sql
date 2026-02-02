@@ -111,11 +111,26 @@ CREATE TABLE `job_state` (
 --
 
 CREATE TABLE `rank_daily` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `captured_date` date NOT NULL,
   `captured_at` datetime NOT NULL DEFAULT current_timestamp(),
   `genre_id` bigint(20) UNSIGNED NOT NULL,
-@@ -126,76 +144,89 @@ CREATE TABLE `rank_stats_30d` (
+  `rank_pos` int(10) UNSIGNED NOT NULL,
+  `item_code` varchar(128) NOT NULL,
+  `price` int(10) UNSIGNED DEFAULT NULL,
+  `review_count` int(10) UNSIGNED DEFAULT NULL,
+  `point_rate` smallint(5) UNSIGNED DEFAULT NULL,
+  `sale_start_at` datetime DEFAULT NULL,
+  `sale_end_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 --
+
+
+CREATE TABLE `rank_stats_30d` (
+  `genre_id` bigint(20) UNSIGNED NOT NULL,
+  `item_code` varchar(128) NOT NULL,
+  `last_seen_date` date NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- テーブルのインデックス `genres`
@@ -157,8 +172,11 @@ ALTER TABLE `job_state`
 -- テーブルのインデックス `rank_daily`
 --
 ALTER TABLE `rank_daily`
-  ADD PRIMARY KEY (`captured_date`,`genre_id`,`rank_pos`),
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uniq_rank_daily_capture` (`captured_date`,`genre_id`,`rank_pos`,`captured_at`),
   ADD KEY `idx_genre_date` (`genre_id`,`captured_date`),
+  ADD KEY `idx_genre_date_captured_at` (`genre_id`,`captured_date`,`captured_at`),
+  ADD KEY `idx_genre_date_rank` (`genre_id`,`captured_date`,`rank_pos`),
   ADD KEY `idx_item_date` (`item_code`,`captured_date`),
   ADD KEY `idx_genre_item_date` (`genre_id`,`item_code`,`captured_date`);
 

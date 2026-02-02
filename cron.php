@@ -5,7 +5,7 @@ declare(strict_types=1);
  * Rakuten Daily Ranking Collector (cron)
  * - Fetch ranking per genre (daily)
  * - Upsert items
- * - Upsert rank_daily (same day overwrite)
+ * - Insert rank_daily snapshot
  * - Save job_state for resume
  * - Optional: cleanup old rank_daily
  */
@@ -200,19 +200,11 @@ try {
       last_seen_at=VALUES(last_seen_at)
   ");
 
-  $upsertRank = $pdo->prepare("
-    INSERT INTO rank_daily
+  $insertRank = $pdo->prepare("
+    INSERT IGNORE INTO rank_daily
       (captured_date, captured_at, genre_id, rank_pos, item_code, price, review_count, point_rate, sale_start_at, sale_end_at)
     VALUES
       (:captured_date, :captured_at, :genre_id, :rank_pos, :item_code, :price, :review_count, :point_rate, :sale_start_at, :sale_end_at)
-    ON DUPLICATE KEY UPDATE
-      captured_at=VALUES(captured_at),
-      item_code=VALUES(item_code),
-      price=VALUES(price),
-      review_count=VALUES(review_count),
-      point_rate=VALUES(point_rate),
-      sale_start_at=VALUES(sale_start_at),
-      sale_end_at=VALUES(sale_end_at)
   ");
 
   $updateCursor = $pdo->prepare("
@@ -355,8 +347,8 @@ try {
         ':last_seen_at'  => $nowDt,
       ]);
 
-      // upsert rank_daily (same day overwrite)
-      $upsertRank->execute([
+      // insert rank_daily snapshot
+      $insertRank->execute([
         ':captured_date' => $today,
         ':captured_at'   => $nowDt,
         ':genre_id'      => $genreId,

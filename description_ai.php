@@ -42,7 +42,7 @@ try {
      FROM rank_daily rd
      JOIN items i ON rd.item_code = i.item_code
      WHERE rd.item_code = :item_code
-     ORDER BY rd.captured_date DESC
+     ORDER BY rd.captured_date DESC, rd.captured_at DESC
      LIMIT 1'
   );
   $stmt->execute(['item_code' => $itemCode]);
