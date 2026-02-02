@@ -201,7 +201,7 @@ try {
   ");
 
   $insertRank = $pdo->prepare("
-    INSERT IGNORE INTO rank_daily
+    INSERT INTO rank_daily
       (captured_date, captured_at, genre_id, rank_pos, item_code, price, review_count, point_rate, sale_start_at, sale_end_at)
     VALUES
       (:captured_date, :captured_at, :genre_id, :rank_pos, :item_code, :price, :review_count, :point_rate, :sale_start_at, :sale_end_at)
