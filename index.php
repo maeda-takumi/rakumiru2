@@ -74,29 +74,11 @@ $rankings = [];
 $previousMap = [];
 $dropouts = [];
 $genreData = [];
-$aiDailyLimit = 3;
-$aiRemaining = null;
 
 if ($pdo) {
   $stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
   $stmt->execute(['line_user_id' => $_SESSION['line_user_id']]);
   $userId = $stmt->fetchColumn();
-
-  if ($userId) {
-    $stmt = $pdo->prepare('SELECT genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, filter_price_enabled, min_price, max_price FROM user_settings WHERE user_id = :user_id LIMIT 1');
-    
-    $stmt->execute(['user_id' => $userId]);
-    $usageRow = $stmt->fetch();
-    if ($usageRow) {
-      $today = (new DateTimeImmutable('today'))->format('Y-m-d');
-      $count = (int) ($usageRow['gemini_daily_count'] ?? 0);
-      $lastDate = $usageRow['gemini_last_used_date'] ?? null;
-      if ($lastDate !== $today) {
-        $count = 0;
-      }
-      $aiRemaining = max(0, $aiDailyLimit - $count);
-    }
-  }
 
   $genres = $pdo->query("SELECT genre_id, genre_name FROM genres WHERE depth = 0 AND is_active = 1 ORDER BY genre_name")->fetchAll();
 
@@ -432,6 +414,23 @@ include __DIR__ . '/header.php';
         </div>
         <button class="genre-slider__button" type="button" data-genre-next aria-label="次のジャンル">›</button>
       </div>
+      <div class="genre-sort" data-genre-sort>
+        <span class="genre-sort__label">表示順</span>
+        <label class="genre-sort__field">
+          <span>基準</span>
+          <select name="sort_key" data-sort-key>
+            <option value="rank">ランキング順</option>
+            <option value="reviews">レビュー数順</option>
+          </select>
+        </label>
+        <label class="genre-sort__field">
+          <span>並び</span>
+          <select name="sort_order" data-sort-order>
+            <option value="asc">昇順</option>
+            <option value="desc">降順</option>
+          </select>
+        </label>
+      </div>
       <div class="genre-slider__viewport">
         <div class="genre-slider__track" data-genre-track>
           <?php foreach ($genreData as $genre): ?>
@@ -455,6 +454,7 @@ include __DIR__ . '/header.php';
                         $onSale = isOnSale($row['sale_start_at'], $row['sale_end_at']);
                         $description = $genre['item_descriptions'][$row['item_code']] ?? null;
                       ?>
+                        <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>" data-rank-pos="<?= (int) $row['rank_pos'] ?>" data-review-count="<?= (int) ($row['review_count'] ?? 0) ?>">
                         <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>">
                           <div class="rank-card__rank"><span><?= (int) $row['rank_pos'] ?></span></div>
                           <div class="rank-card__body">

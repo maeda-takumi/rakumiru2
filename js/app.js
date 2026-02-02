@@ -17,8 +17,6 @@
   const priceFilterNote = settingsModal?.querySelector('[data-price-filter-note]');
   const genreSlider = document.querySelector('[data-genre-slider]');
   const apiBase = document.body?.dataset.apiBase || '/';
-  const aiDailyLimit = Number(document.body?.dataset.aiDailyLimit ?? '');
-  let aiRemaining = Number(document.body?.dataset.aiRemaining ?? '');
   let activeCard = null;
 
 
@@ -109,8 +107,41 @@
     const label = genreSlider.querySelector('[data-genre-label]');
     const countLabel = genreSlider.querySelector('[data-genre-count-label]');
     const dots = Array.from(genreSlider.querySelectorAll('[data-genre-dot]'));
+    const sortKeySelect = genreSlider.querySelector('[data-sort-key]');
+    const sortOrderSelect = genreSlider.querySelector('[data-sort-order]');
     let currentIndex = 0;
 
+    const parseNumber = (value) => {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : 0;
+    };
+
+    const sortRankCards = () => {
+      const sortKey = sortKeySelect?.value ?? 'rank';
+      const sortOrder = sortOrderSelect?.value ?? 'asc';
+      const multiplier = sortOrder === 'desc' ? -1 : 1;
+
+      slides.forEach((slide) => {
+        const list = slide.querySelector('.ranking-list');
+        if (!list) return;
+        const cards = Array.from(list.querySelectorAll('.rank-card'));
+        cards.sort((a, b) => {
+          const aValue =
+            sortKey === 'reviews'
+              ? parseNumber(a.dataset.reviewCount)
+              : parseNumber(a.dataset.rankPos);
+          const bValue =
+            sortKey === 'reviews'
+              ? parseNumber(b.dataset.reviewCount)
+              : parseNumber(b.dataset.rankPos);
+          if (aValue === bValue) {
+            return parseNumber(a.dataset.rankPos) - parseNumber(b.dataset.rankPos);
+          }
+          return (aValue - bValue) * multiplier;
+        });
+        cards.forEach((card) => list.appendChild(card));
+      });
+    };
     const updateSlider = () => {
       if (!track || slides.length === 0) return;
       track.style.transform = `translateX(${-currentIndex * 100}%)`;
@@ -164,6 +195,10 @@
     }
 
     updateSlider();
+    sortRankCards();
+
+    sortKeySelect?.addEventListener('change', sortRankCards);
+    sortOrderSelect?.addEventListener('change', sortRankCards);
   }
   document.addEventListener('click', (event) => {
     const target = event.target;
@@ -212,16 +247,6 @@
           window.alert('商品情報が取得できません。');
           return;
         }
-        const limitText = Number.isFinite(aiDailyLimit) ? String(aiDailyLimit) : '3';
-        const remainingText = Number.isFinite(aiRemaining) ? `${aiRemaining}回` : '不明';
-        const confirmMessage = `AI説明を生成しますか？\n残り使用回数: ${remainingText}\n※1ユーザ${limitText}回まで`;
-        if (!window.confirm(confirmMessage)) {
-          return;
-        }
-        if (Number.isFinite(aiRemaining) && aiRemaining <= 0) {
-          window.alert('本日の利用回数が上限に達しています。明日以降に再度お試しください。');
-          return;
-        }
         const descriptionEl = card.querySelector('.rank-card__description');
         const previousHtml = descriptionEl?.innerHTML ?? '';
         const previousDescription = descriptionEl?.dataset.description ?? '';
@@ -250,10 +275,6 @@
             if (descriptionEl) {
               descriptionEl.dataset.description = description;
               descriptionEl.innerHTML = `<p>${escapeHtml(description).replace(/\n/g, '<br>')}</p>`;
-            }
-            if (Number.isFinite(aiRemaining) && aiRemaining > 0) {
-              aiRemaining -= 1;
-              document.body.dataset.aiRemaining = String(aiRemaining);
             }
           })
           .catch((error) => {

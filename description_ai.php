@@ -33,7 +33,10 @@ try {
   $apiKey = fetchUserGeminiApiKey($pdo, $userId);
   if (!$apiKey) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Gemini APIキーが未設定です。設定から登録してください。'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(
+      ['success' => false, 'message' => 'GeminiのAPIキーが未設定です。画面右上にある「APIボタン」からAPIKeyの保存をしてください'],
+      JSON_UNESCAPED_UNICODE
+    );
     exit;
   }
 
@@ -56,14 +59,6 @@ try {
     exit;
   }
 
-  if (!consumeGeminiDailyQuota($pdo, $userId, 3)) {
-    http_response_code(429);
-    echo json_encode(
-      ['success' => false, 'message' => 'Gemini APIの利用回数が上限に達しました。明日以降に再度お試しください。'],
-      JSON_UNESCAPED_UNICODE
-    );
-    exit;
-  }
 
   $infoLines = [
     '商品コード: ' . $itemCode,
