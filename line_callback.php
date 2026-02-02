@@ -16,10 +16,32 @@ function renderLineOnlyMessage(): void {
 
 $code = filter_input(INPUT_GET, 'code');
 $state = filter_input(INPUT_GET, 'state');
-$sessionState = $_SESSION['line_state'] ?? null;
-$sessionNonce = $_SESSION['line_nonce'] ?? null;
+$dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
+try {
+  $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+  ]);
+} catch (PDOException $e) {
+  renderLineOnlyMessage();
+}
 
-if (!$code || !$state || !$sessionState || !hash_equals($sessionState, $state)) {
+try {
+  $cleanup = $pdo->prepare('DELETE FROM oauth_state WHERE created_at < (NOW() - INTERVAL 15 MINUTE)');
+  $cleanup->execute();
+
+  $lookup = $pdo->prepare('SELECT nonce FROM oauth_state WHERE state = :state LIMIT 1');
+  $lookup->execute(['state' => $state]);
+  $row = $lookup->fetch();
+  $dbNonce = $row['nonce'] ?? null;
+
+  $delete = $pdo->prepare('DELETE FROM oauth_state WHERE state = :state');
+  $delete->execute(['state' => $state]);
+} catch (PDOException $e) {
+  renderLineOnlyMessage();
+}
+
+if (!$code || !$state || !$dbNonce) {
   renderLineOnlyMessage();
 }
 
@@ -65,19 +87,7 @@ $verifyResponse = linePost('https://api.line.me/oauth2/v2.1/verify', [
 $lineUserId = $verifyResponse['sub'] ?? null;
 $verifiedNonce = $verifyResponse['nonce'] ?? null;
 
-if (!$lineUserId || !$sessionNonce || ($verifiedNonce && !hash_equals($sessionNonce, $verifiedNonce))) {
-  renderLineOnlyMessage();
-}
-
-unset($_SESSION['line_state'], $_SESSION['line_nonce']);
-
-$dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
-try {
-  $pdo = new PDO($dsn, DB_USER, DB_PASS, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-  ]);
-} catch (PDOException $e) {
+if (!$lineUserId || ($verifiedNonce && !hash_equals($dbNonce, $verifiedNonce))) {
   renderLineOnlyMessage();
 }
 
