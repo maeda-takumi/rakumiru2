@@ -31,11 +31,9 @@ try {
   $error = 'データベースに接続できませんでした。';
 }
 
-$selectedParent = filter_input(INPUT_GET, 'parent_id', FILTER_VALIDATE_INT);
 $selectedGenre = filter_input(INPUT_GET, 'genre_id', FILTER_VALIDATE_INT);
 
-$parents = [];
-$children = [];
+$genres = [];
 $latestDate = null;
 $previousDate = null;
 $rankings = [];
@@ -47,13 +45,7 @@ if ($pdo) {
   $stmt->execute(['line_user_id' => $_SESSION['line_user_id']]);
   $userId = $stmt->fetchColumn();
 
-  $parents = $pdo->query("SELECT genre_id, genre_name FROM genres WHERE depth = 0 AND is_active = 1 ORDER BY genre_name")->fetchAll();
-
-  if ($selectedParent) {
-    $stmt = $pdo->prepare("SELECT genre_id, genre_name FROM genres WHERE depth = 1 AND parent_genre_id = :parent AND is_active = 1 ORDER BY genre_name");
-    $stmt->execute(['parent' => $selectedParent]);
-    $children = $stmt->fetchAll();
-  }
+  $genres = $pdo->query("SELECT genre_id, genre_name FROM genres WHERE depth = 0 AND is_active = 1 ORDER BY genre_name")->fetchAll();
 
   if ($selectedGenre) {
     $stmt = $pdo->prepare("SELECT MAX(captured_date) AS latest_date FROM rank_daily WHERE genre_id = :genre");
@@ -164,23 +156,12 @@ include __DIR__ . '/header.php';
   <?php endif; ?>
   <form class="genre-form" method="get">
     <label>
-      親ジャンル
-      <select name="parent_id" id="parent-select">
+      ジャンル
+      <select name="genre_id" id="genre-select">
         <option value="">選択してください</option>
-        <?php foreach ($parents as $parent): ?>
-          <option value="<?= (int) $parent['genre_id'] ?>" <?= $selectedParent === (int) $parent['genre_id'] ? 'selected' : '' ?>>
-            <?= htmlspecialchars($parent['genre_name'], ENT_QUOTES, 'UTF-8') ?>
-          </option>
-        <?php endforeach; ?>
-      </select>
-    </label>
-    <label>
-      子ジャンル
-      <select name="genre_id" id="child-select" <?= $selectedParent ? '' : 'disabled' ?>>
-        <option value="">選択してください</option>
-        <?php foreach ($children as $child): ?>
-          <option value="<?= (int) $child['genre_id'] ?>" <?= $selectedGenre === (int) $child['genre_id'] ? 'selected' : '' ?>>
-            <?= htmlspecialchars($child['genre_name'], ENT_QUOTES, 'UTF-8') ?>
+        <?php foreach ($genres as $genre): ?>
+          <option value="<?= (int) $genre['genre_id'] ?>" <?= $selectedGenre === (int) $genre['genre_id'] ? 'selected' : '' ?>>
+            <?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?>
           </option>
         <?php endforeach; ?>
       </select>

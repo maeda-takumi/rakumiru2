@@ -1,7 +1,6 @@
 (() => {
-  const parentSelect = document.getElementById('parent-select');
-  const childSelect = document.getElementById('child-select');
-  const form = parentSelect?.closest('form');
+  const genreSelect = document.getElementById('genre-select');
+  const form = genreSelect?.closest('form');
   const modal = document.getElementById('description-modal');
   const modalText = document.getElementById('description-modal-text');
   const modalSave = document.getElementById('description-modal-save');
@@ -9,17 +8,8 @@
   const apiBase = document.body?.dataset.apiBase || '/';
   let activeCard = null;
 
-  if (parentSelect && form) {
-    parentSelect.addEventListener('change', () => {
-      if (childSelect) {
-        childSelect.selectedIndex = 0;
-      }
-      form.submit();
-    });
-  }
-
-  if (childSelect && form) {
-    childSelect.addEventListener('change', () => {
+  if (genreSelect && form) {
+    genreSelect.addEventListener('change', () => {
       form.submit();
     });
   }
