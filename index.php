@@ -36,6 +36,7 @@ $filterSaleOnly = false;
 $filterNewOnly = false;
 $filterDropoutOnly = false;
 $filterReviewUpOnly = false;
+$filterPriceEnabled = false;
 $minPrice = null;
 $maxPrice = null;
 $settingsError = null;
@@ -46,6 +47,7 @@ $defaultSettings = [
   'filter_new_only' => 0,
   'filter_dropout_only' => 0,
   'filter_review_up_only' => 1,
+  'filter_price_enabled' => 0,
   'min_price' => 1500,
   'max_price' => 2980,
 ];
@@ -79,7 +81,7 @@ if ($pdo) {
   $userId = $stmt->fetchColumn();
 
   if ($userId) {
-    $stmt = $pdo->prepare('SELECT gemini_daily_count, gemini_last_used_date FROM users WHERE id = :id LIMIT 1');
+    $stmt = $pdo->prepare('SELECT genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, filter_price_enabled, min_price, max_price FROM user_settings WHERE user_id = :user_id LIMIT 1');
     $stmt->execute(['id' => $userId]);
     $usageRow = $stmt->fetch();
     if ($usageRow) {
@@ -110,8 +112,8 @@ if ($pdo) {
     $defaultSettingsRow = $defaultSettings;
     $defaultSettingsRow['genre_ids'] = json_encode($defaultSettings['genre_ids'], JSON_UNESCAPED_UNICODE);
     $stmt = $pdo->prepare(
-      'INSERT INTO user_settings (user_id, genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, min_price, max_price)
-       VALUES (:user_id, :genre_ids, :sort_key, :filter_sale_only, :filter_new_only, :filter_dropout_only, :filter_review_up_only, :min_price, :max_price)'
+      'INSERT INTO user_settings (user_id, genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, filter_price_enabled, min_price, max_price)
+       VALUES (:user_id, :genre_ids, :sort_key, :filter_sale_only, :filter_new_only, :filter_dropout_only, :filter_review_up_only, :filter_price_enabled, :min_price, :max_price)'
     );
     $stmt->execute([
       'user_id' => $userId,
@@ -121,6 +123,7 @@ if ($pdo) {
       'filter_new_only' => $defaultSettings['filter_new_only'],
       'filter_dropout_only' => $defaultSettings['filter_dropout_only'],
       'filter_review_up_only' => $defaultSettings['filter_review_up_only'],
+      'filter_price_enabled' => $defaultSettings['filter_price_enabled'],
       'min_price' => $defaultSettings['min_price'],
       'max_price' => $defaultSettings['max_price'],
     ]);
@@ -136,13 +139,19 @@ if ($pdo) {
     $filterNewOnly = filter_input(INPUT_GET, 'new_only') === '1';
     $filterDropoutOnly = filter_input(INPUT_GET, 'dropout_only') === '1';
     $filterReviewUpOnly = filter_input(INPUT_GET, 'review_up_only') === '1';
+    $filterPriceEnabled = filter_input(INPUT_GET, 'price_filter_enabled') === '1';
     $minPrice = filter_input(INPUT_GET, 'min_price', FILTER_VALIDATE_INT);
     $maxPrice = filter_input(INPUT_GET, 'max_price', FILTER_VALIDATE_INT);
 
-    if ($minPrice === null || $minPrice === false || $maxPrice === null || $maxPrice === false) {
-      $settingsError = '価格は最低・最高の両方を入力してください。';
-    } elseif ($minPrice > $maxPrice) {
-      $settingsError = '最低価格は最高価格以下にしてください。';
+    if ($filterPriceEnabled) {
+      if ($minPrice === null || $minPrice === false || $maxPrice === null || $maxPrice === false) {
+        $settingsError = '価格は最低・最高の両方を入力してください。';
+      } elseif ($minPrice > $maxPrice) {
+        $settingsError = '最低価格は最高価格以下にしてください。';
+      }
+    } else {
+      $minPrice = null;
+      $maxPrice = null;
     }
 
     if ($userId && !$settingsError) {
@@ -154,6 +163,7 @@ if ($pdo) {
              filter_new_only = :filter_new_only,
              filter_dropout_only = :filter_dropout_only,
              filter_review_up_only = :filter_review_up_only,
+             filter_price_enabled = :filter_price_enabled,
              min_price = :min_price,
              max_price = :max_price
          WHERE user_id = :user_id'
@@ -166,6 +176,7 @@ if ($pdo) {
         'filter_new_only' => $filterNewOnly ? 1 : 0,
         'filter_dropout_only' => $filterDropoutOnly ? 1 : 0,
         'filter_review_up_only' => $filterReviewUpOnly ? 1 : 0,
+        'filter_price_enabled' => $filterPriceEnabled ? 1 : 0,
         'min_price' => $minPrice,
         'max_price' => $maxPrice,
       ]);
@@ -185,6 +196,7 @@ if ($pdo) {
     $filterNewOnly = !empty($savedSettings['filter_new_only']);
     $filterDropoutOnly = !empty($savedSettings['filter_dropout_only']);
     $filterReviewUpOnly = !empty($savedSettings['filter_review_up_only']);
+    $filterPriceEnabled = !empty($savedSettings['filter_price_enabled']);
     $minPrice = $savedSettings['min_price'] !== null ? (int) $savedSettings['min_price'] : null;
     $maxPrice = $savedSettings['max_price'] !== null ? (int) $savedSettings['max_price'] : null;
   }
@@ -294,7 +306,7 @@ if ($pdo) {
     }
 
     $displayRankings = $rankings;
-    if ($filterSaleOnly || $filterNewOnly || $filterReviewUpOnly) {
+    if ($filterPriceEnabled && $minPrice !== null && $maxPrice !== null) {
       $displayRankings = array_values(array_filter(
         $displayRankings,
         function (array $row) use ($filterSaleOnly, $filterNewOnly, $filterReviewUpOnly, $previousMap): bool {
@@ -562,15 +574,20 @@ include __DIR__ . '/header.php';
       </div>
       <div class="settings-form__group">
         <span class="settings-form__label">価格帯</span>
+        <label class="settings-form__checkbox">
+          <input type="checkbox" name="price_filter_enabled" value="1" <?= $filterPriceEnabled ? 'checked' : '' ?> data-price-filter-toggle>
+          価格で絞り込む
+        </label>
+        <p class="settings-form__note" data-price-filter-note>価格帯を指定する場合にONにしてください。</p>
         <div class="settings-form__price">
           <label class="settings-form__field">
             <span>最低価格</span>
-            <input type="number" name="min_price" min="0" step="1" value="<?= $minPrice !== null ? (int) $minPrice : '' ?>" required>
+            <input type="number" name="min_price" min="0" step="1" value="<?= $minPrice !== null ? (int) $minPrice : '' ?>" <?= $filterPriceEnabled ? 'required' : '' ?> <?= $filterPriceEnabled ? '' : 'disabled' ?> data-price-filter-input>
           </label>
           <span class="settings-form__separator">〜</span>
           <label class="settings-form__field">
             <span>最高価格</span>
-            <input type="number" name="max_price" min="0" step="1" value="<?= $maxPrice !== null ? (int) $maxPrice : '' ?>" required>
+            <input type="number" name="max_price" min="0" step="1" value="<?= $maxPrice !== null ? (int) $maxPrice : '' ?>" <?= $filterPriceEnabled ? 'required' : '' ?> <?= $filterPriceEnabled ? '' : 'disabled' ?> data-price-filter-input>
           </label>
         </div>
       </div>
