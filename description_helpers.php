@@ -30,3 +30,50 @@ function saveItemDescription(PDO $pdo, int $userId, string $itemCode, string $de
     'description' => $description,
   ]);
 }
+
+function consumeGeminiDailyQuota(PDO $pdo, int $userId, int $limit = 3): bool {
+  $today = (new DateTimeImmutable('today'))->format('Y-m-d');
+
+  $pdo->beginTransaction();
+  $stmt = $pdo->prepare(
+    'SELECT gemini_daily_count, gemini_last_used_date
+     FROM users
+     WHERE id = :id
+     FOR UPDATE'
+  );
+  $stmt->execute(['id' => $userId]);
+  $row = $stmt->fetch();
+
+  if (!$row) {
+    $pdo->rollBack();
+    return false;
+  }
+
+  $count = (int) ($row['gemini_daily_count'] ?? 0);
+  $lastDate = $row['gemini_last_used_date'] ?? null;
+
+  if ($lastDate !== $today) {
+    $count = 0;
+  }
+
+  if ($count >= $limit) {
+    $pdo->rollBack();
+    return false;
+  }
+
+  $count++;
+  $stmt = $pdo->prepare(
+    'UPDATE users
+     SET gemini_daily_count = :count,
+         gemini_last_used_date = :used_date
+     WHERE id = :id'
+  );
+  $stmt->execute([
+    'count' => $count,
+    'used_date' => $today,
+    'id' => $userId,
+  ]);
+  $pdo->commit();
+
+  return true;
+}

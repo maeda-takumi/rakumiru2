@@ -54,6 +54,15 @@ try {
     exit;
   }
 
+  if (!consumeGeminiDailyQuota($pdo, $userId, 3)) {
+    http_response_code(429);
+    echo json_encode(
+      ['success' => false, 'message' => 'Gemini APIの利用回数が上限に達しました。明日以降に再度お試しください。'],
+      JSON_UNESCAPED_UNICODE
+    );
+    exit;
+  }
+
   $infoLines = [
     '商品コード: ' . $itemCode,
     '商品名: ' . ($item['item_name'] ?? '不明'),

@@ -34,6 +34,7 @@ $selectedGenreIds = [];
 $filterSaleOnly = false;
 $filterNewOnly = false;
 $filterDropoutOnly = false;
+$filterReviewUpOnly = false;
 $minPrice = null;
 $maxPrice = null;
 $settingsError = null;
@@ -47,6 +48,7 @@ $selectedGenre = filter_input(INPUT_GET, 'genre_id', FILTER_VALIDATE_INT);
 $filterSaleOnly = filter_input(INPUT_GET, 'sale_only') === '1';
 $filterNewOnly = filter_input(INPUT_GET, 'new_only') === '1';
 $filterDropoutOnly = filter_input(INPUT_GET, 'dropout_only') === '1';
+$filterReviewUpOnly = filter_input(INPUT_GET, 'review_up_only') === '1';
 
 $genres = [];
 $genreMap = [];
@@ -71,7 +73,7 @@ if ($pdo) {
 
   $savedSettings = null;
   if ($userId) {
-    $stmt = $pdo->prepare('SELECT genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, min_price, max_price FROM user_settings WHERE user_id = :user_id LIMIT 1');
+    $stmt = $pdo->prepare('SELECT genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, min_price, max_price FROM user_settings WHERE user_id = :user_id LIMIT 1');
     $stmt->execute(['user_id' => $userId]);
     $savedSettings = $stmt->fetch();
   }
@@ -84,6 +86,7 @@ if ($pdo) {
     $filterSaleOnly = filter_input(INPUT_GET, 'sale_only') === '1';
     $filterNewOnly = filter_input(INPUT_GET, 'new_only') === '1';
     $filterDropoutOnly = filter_input(INPUT_GET, 'dropout_only') === '1';
+    $filterReviewUpOnly = filter_input(INPUT_GET, 'review_up_only') === '1';
     $minPrice = filter_input(INPUT_GET, 'min_price', FILTER_VALIDATE_INT);
     $maxPrice = filter_input(INPUT_GET, 'max_price', FILTER_VALIDATE_INT);
 
@@ -95,14 +98,15 @@ if ($pdo) {
 
     if ($userId && !$settingsError) {
       $stmt = $pdo->prepare(
-        'INSERT INTO user_settings (user_id, genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, min_price, max_price)
-         VALUES (:user_id, :genre_ids, :sort_key, :filter_sale_only, :filter_new_only, :filter_dropout_only, :min_price, :max_price)
+        'INSERT INTO user_settings (user_id, genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, min_price, max_price)
+         VALUES (:user_id, :genre_ids, :sort_key, :filter_sale_only, :filter_new_only, :filter_dropout_only, :filter_review_up_only, :min_price, :max_price)
          ON DUPLICATE KEY UPDATE
            genre_ids = VALUES(genre_ids),
            sort_key = VALUES(sort_key),
            filter_sale_only = VALUES(filter_sale_only),
            filter_new_only = VALUES(filter_new_only),
            filter_dropout_only = VALUES(filter_dropout_only),
+           filter_review_up_only = VALUES(filter_review_up_only),
            min_price = VALUES(min_price),
            max_price = VALUES(max_price)'
       );
@@ -113,6 +117,7 @@ if ($pdo) {
         'filter_sale_only' => $filterSaleOnly ? 1 : 0,
         'filter_new_only' => $filterNewOnly ? 1 : 0,
         'filter_dropout_only' => $filterDropoutOnly ? 1 : 0,
+        'filter_review_up_only' => $filterReviewUpOnly ? 1 : 0,
         'min_price' => $minPrice,
         'max_price' => $maxPrice,
       ]);
@@ -131,6 +136,7 @@ if ($pdo) {
     $filterSaleOnly = !empty($savedSettings['filter_sale_only']);
     $filterNewOnly = !empty($savedSettings['filter_new_only']);
     $filterDropoutOnly = !empty($savedSettings['filter_dropout_only']);
+    $filterReviewUpOnly = !empty($savedSettings['filter_review_up_only']);
     $minPrice = $savedSettings['min_price'] !== null ? (int) $savedSettings['min_price'] : null;
     $maxPrice = $savedSettings['max_price'] !== null ? (int) $savedSettings['max_price'] : null;
   }
@@ -217,15 +223,26 @@ if ($pdo) {
     }
 
     $displayRankings = $rankings;
-    if ($filterSaleOnly || $filterNewOnly) {
+    if ($filterSaleOnly || $filterNewOnly || $filterReviewUpOnly) {
       $displayRankings = array_values(array_filter(
         $displayRankings,
-        function (array $row) use ($filterSaleOnly, $filterNewOnly, $previousMap): bool {
+        function (array $row) use ($filterSaleOnly, $filterNewOnly, $filterReviewUpOnly, $previousMap): bool {
           if ($filterSaleOnly && !isOnSale($row['sale_start_at'], $row['sale_end_at'])) {
             return false;
           }
           if ($filterNewOnly && isset($previousMap[$row['item_code']])) {
             return false;
+          }
+          if ($filterReviewUpOnly) {
+            $previous = $previousMap[$row['item_code']] ?? null;
+            if (!$previous) {
+              return false;
+            }
+            $currentReview = (int) ($row['review_count'] ?? 0);
+            $previousReview = (int) ($previous['review_count'] ?? 0);
+            if ($currentReview <= $previousReview) {
+              return false;
+            }
           }
           return true;
         }
@@ -334,18 +351,6 @@ include __DIR__ . '/header.php';
           <?php foreach ($genreData as $genre): ?>
             <div class="genre-slide" data-genre-slide data-genre-name="<?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?>">
               <div class="genre-section">
-                <div class="genre-section__header">
-                  <?php if ($genre['latest_date']): ?>
-                    <div class="panel__meta">
-                      <span>最新: <?= htmlspecialchars($genre['latest_date'], ENT_QUOTES, 'UTF-8') ?></span>
-                      <?php if ($genre['previous_date']): ?>
-                        <span>比較: <?= htmlspecialchars($genre['previous_date'], ENT_QUOTES, 'UTF-8') ?></span>
-                      <?php else: ?>
-                        <span>比較データなし</span>
-                      <?php endif; ?>
-                    </div>
-                  <?php endif; ?>
-                </div>
 
                 <?php if (!$genre['latest_date']): ?>
                   <p class="notice">このジャンルのランキングデータがまだありません。</p>
@@ -457,10 +462,6 @@ include __DIR__ . '/header.php';
 <div class="modal" id="settings-modal" aria-hidden="true">
   <div class="modal__overlay" data-settings-close></div>
   <div class="modal__panel modal__panel--settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
-    <div class="modal__header">
-      <h3 id="settings-modal-title">表示設定</h3>
-      <button type="button" class="modal__close" data-settings-close aria-label="閉じる">×</button>
-    </div>
     <form class="settings-form" method="get">
       <div class="settings-form__group">
         <span class="settings-form__label">ジャンル</span>
@@ -487,6 +488,10 @@ include __DIR__ . '/header.php';
         <label class="settings-form__checkbox">
           <input type="checkbox" name="dropout_only" value="1" <?= $filterDropoutOnly ? 'checked' : '' ?>>
           ランク外落ちのみ
+        </label>
+        <label class="settings-form__checkbox">
+          <input type="checkbox" name="review_up_only" value="1" <?= $filterReviewUpOnly ? 'checked' : '' ?>>
+          レビュー増加のみ
         </label>
       </div>
       <div class="settings-form__group">

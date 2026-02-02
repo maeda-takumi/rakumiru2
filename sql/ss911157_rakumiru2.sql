@@ -82,6 +82,7 @@ CREATE TABLE `user_settings` (
   `filter_sale_only` tinyint(1) NOT NULL DEFAULT 0,
   `filter_new_only` tinyint(1) NOT NULL DEFAULT 0,
   `filter_dropout_only` tinyint(1) NOT NULL DEFAULT 0,
+  `filter_review_up_only` tinyint(1) NOT NULL DEFAULT 0,
   `min_price` int(10) UNSIGNED DEFAULT NULL,
   `max_price` int(10) UNSIGNED DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),

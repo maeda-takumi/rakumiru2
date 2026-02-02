@@ -216,7 +216,7 @@ h2{
 .rank-card {
     background: #fff;
     border-radius: 16px;
-    border: 2px solid rgba(15, 23, 42, 0.04);
+    border: 1px solid var(--border);
     padding: 16px;
     position: relative;
     display: grid;
