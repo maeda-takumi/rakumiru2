@@ -445,13 +445,14 @@ h2{
 }
 
 .modal__textarea {
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  padding: 12px;
-  font-size: 0.95rem;
-  resize: vertical;
-  min-height: 120px;
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid rgba(15, 23, 42, 0.1);
+    padding: 12px;
+    font-size: 0.95rem;
+    resize: vertical;
+    min-height: 350px;
+    line-height: 1.5;
 }
 
 .modal__actions {
