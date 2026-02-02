@@ -52,7 +52,7 @@ $defaultSettings = [
   'min_price' => 1500,
   'max_price' => 2980,
 ];
-$priceFilterEnabled = $defaultSettings['min_price'] !== null && $defaultSettings['max_price'] !== null;
+$priceFilterEnabled = !empty($defaultSettings['filter_price_enabled']);
 
 
 $selectedGenreIds = filter_input(INPUT_GET, 'genre_ids', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
@@ -146,9 +146,11 @@ if ($pdo) {
     $minPrice = filter_input(INPUT_GET, 'min_price', FILTER_VALIDATE_INT);
     $maxPrice = filter_input(INPUT_GET, 'max_price', FILTER_VALIDATE_INT);
 
-   if (!$priceFilterEnabled) {
-      $minPrice = null;
-      $maxPrice = null;
+    if (!$filterPriceEnabled) {
+      if ($savedSettings) {
+        $minPrice = $savedSettings['min_price'] !== null ? (int) $savedSettings['min_price'] : null;
+        $maxPrice = $savedSettings['max_price'] !== null ? (int) $savedSettings['max_price'] : null;
+      }
     } elseif ($minPrice === null || $minPrice === false || $maxPrice === null || $maxPrice === false) {
       $settingsError = '価格は最低・最高の両方を入力してください。';
     } elseif ($minPrice > $maxPrice) {
@@ -182,6 +184,7 @@ if ($pdo) {
         'max_price' => $maxPrice,
       ]);
     }
+    $priceFilterEnabled = $filterPriceEnabled;
   } elseif ($savedSettings) {
     $savedGenreIds = [];
     if (!empty($savedSettings['genre_ids'])) {
@@ -200,7 +203,7 @@ if ($pdo) {
     $filterPriceEnabled = !empty($savedSettings['filter_price_enabled']);
     $minPrice = $savedSettings['min_price'] !== null ? (int) $savedSettings['min_price'] : null;
     $maxPrice = $savedSettings['max_price'] !== null ? (int) $savedSettings['max_price'] : null;
-    $priceFilterEnabled = $minPrice !== null && $maxPrice !== null;
+    $priceFilterEnabled = $filterPriceEnabled;
   }
   $selectedGenreIds = array_values(array_filter(
     $selectedGenreIds,
@@ -308,32 +311,30 @@ if ($pdo) {
     }
 
     $displayRankings = $rankings;
-    if ($priceFilterEnabled && $minPrice !== null && $maxPrice !== null) {
-      $displayRankings = array_values(array_filter(
-        $displayRankings,
-        function (array $row) use ($filterSaleOnly, $filterNewOnly, $filterReviewUpOnly, $previousMap): bool {
-          if ($filterSaleOnly && !isOnSale($row['sale_start_at'], $row['sale_end_at'])) {
-            return false;
-          }
-          if ($filterNewOnly && isset($previousMap[$row['item_code']])) {
-            return false;
-          }
-          if ($filterReviewUpOnly) {
-            $previous = $previousMap[$row['item_code']] ?? null;
-            if (!$previous) {
-              return false;
-            }
-            $currentReview = (int) ($row['review_count'] ?? 0);
-            $previousReview = (int) ($previous['review_count'] ?? 0);
-            if ($currentReview <= $previousReview) {
-              return false;
-            }
-          }
-          return true;
+    $displayRankings = array_values(array_filter(
+      $displayRankings,
+      function (array $row) use ($filterSaleOnly, $filterNewOnly, $filterReviewUpOnly, $previousMap): bool {
+        if ($filterSaleOnly && !isOnSale($row['sale_start_at'], $row['sale_end_at'])) {
+          return false;
         }
-      ));
-    }
-    if ($minPrice !== null && $maxPrice !== null) {
+        if ($filterNewOnly && isset($previousMap[$row['item_code']])) {
+          return false;
+        }
+        if ($filterReviewUpOnly) {
+          $previous = $previousMap[$row['item_code']] ?? null;
+          if (!$previous) {
+            return false;
+          }
+          $currentReview = (int) ($row['review_count'] ?? 0);
+          $previousReview = (int) ($previous['review_count'] ?? 0);
+          if ($currentReview <= $previousReview) {
+            return false;
+          }
+        }
+        return true;
+      }
+    ));
+    if ($filterPriceEnabled && $minPrice !== null && $maxPrice !== null) {
       $displayRankings = array_values(array_filter(
         $displayRankings,
         function (array $row) use ($minPrice, $maxPrice): bool {
