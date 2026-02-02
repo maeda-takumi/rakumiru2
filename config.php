@@ -7,5 +7,5 @@
     define('LINE_CHANNEL_ID', '2009012040');
     define('LINE_CHANNEL_SECRET', 'f7984afbe1a8f69b59610142c0d0f729');
     define('LINE_REDIRECT_URI', 'https://totalappworks.com/rakumiru/test/line_callback.php');
-    define('GEMINI_API_KEY','AIzaSyARDjxEc9gud4VsO6JeGAdy5MZq31Nyw88')
+    define('GEMINI_API_KEY','AIzaSyBlYZPgDDjTHmHdMDN6Yk_xwDIgnXqVbBQ')
 ?>  
