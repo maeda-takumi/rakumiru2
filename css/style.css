@@ -73,9 +73,10 @@ main {
 
 .panel__header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between; /* 左右の端へ */
+  flex-direction: row;
   gap: 6px;
-    /* padding: 0px 20px; */
+  /* padding: 0px 20px; */
 }
 
 .panel__header--settings {
@@ -503,6 +504,13 @@ h2{
   gap: 8px;
 }
 
+.settings-form__options {
+  display: grid;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
 .settings-form__label {
   font-size: 0.9rem;
   color: var(--muted);
@@ -513,6 +521,29 @@ h2{
   align-items: center;
   gap: 8px;
   font-size: 0.95rem;
+}
+
+.genre-section {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.genre-section:first-of-type {
+  margin-top: 0;
+}
+
+.genre-section__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.genre-section__title {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .modal__actions {
