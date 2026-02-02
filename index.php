@@ -84,7 +84,8 @@ if ($pdo) {
 
   if ($userId) {
     $stmt = $pdo->prepare('SELECT genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, filter_price_enabled, min_price, max_price FROM user_settings WHERE user_id = :user_id LIMIT 1');
-    $stmt->execute(['id' => $userId]);
+    
+    $stmt->execute(['user_id' => $userId]);
     $usageRow = $stmt->fetch();
     if ($usageRow) {
       $today = (new DateTimeImmutable('today'))->format('Y-m-d');
