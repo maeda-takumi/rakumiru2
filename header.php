@@ -17,10 +17,12 @@ $basePath = $basePath === '' ? '/' : $basePath . '/';
   <header class="app-header">
     <div class="container">
       <div class="app-header__inner">
-        <div class="brand">
-          <span class="brand__dot"></span>
-          <span class="brand__title">RAKUMiRU</span>
-        </div>
+      <div class="brand">
+        <a href="<?= htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') ?>" class="brand__link" aria-label="RAKUMiRU">
+          <img src="img/logo.png" alt="RAKUMiRU" class="brand__logo">
+        </a>
+      </div>
+
         <div class="app-header__actions">
           <button class="header-icon-button" type="button" id="api-key-open" aria-haspopup="dialog" aria-controls="api-key-modal">
             <img src="img/api.png" alt="Gemini APIキー設定" />

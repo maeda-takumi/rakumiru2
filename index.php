@@ -416,20 +416,22 @@ include __DIR__ . '/header.php';
       </div>
       <div class="genre-sort" data-genre-sort>
         <span class="genre-sort__label">表示順</span>
-        <label class="genre-sort__field">
-          <div class="sort_label">基準</div>
-          <select name="sort_key" data-sort-key>
-            <option value="rank">ランキング順</option>
-            <option value="reviews">レビュー数順</option>
-          </select>
-        </label>
-        <label class="genre-sort__field">
-          <div class="sort_label">並び</div>
-          <select name="sort_order" data-sort-order>
-            <option value="asc">昇順</option>
-            <option value="desc">降順</option>
-          </select>
-        </label>
+        <div class="sort_frame">
+          <label class="genre-sort__field">
+            <div class="sort_label">基準</div>
+            <select name="sort_key" data-sort-key>
+              <option value="rank">ランキング順</option>
+              <option value="reviews">レビュー数順</option>
+            </select>
+          </label>
+          <label class="genre-sort__field">
+            <div class="sort_label">並び</div>
+            <select name="sort_order" data-sort-order>
+              <option value="asc">昇順</option>
+              <option value="desc">降順</option>
+            </select>
+          </label>
+        </div>
       </div>
       <div class="genre-slider__viewport">
         <div class="genre-slider__track" data-genre-track>

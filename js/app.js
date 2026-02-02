@@ -12,6 +12,7 @@
   const apiKeyInput = document.getElementById('api-key-input');
   const apiKeySave = document.getElementById('api-key-save');
   const apiKeyStatus = document.getElementById('api-key-status');
+  const scrollTopButton = document.getElementById('scroll-top-button');
   const priceFilterToggle = document.getElementById('price-filter-enabled');
   const priceInputs = Array.from(document.querySelectorAll('[data-price-input]'));
   const priceFilterNote = settingsModal?.querySelector('[data-price-filter-note]');
@@ -57,6 +58,16 @@
     apiKeyStatus.textContent = '';
     apiKeyInput.value = '';
   };
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const updateScrollTopButton = () => {
+    if (!scrollTopButton) return;
+    scrollTopButton.classList.toggle('is-visible', window.scrollY > 200);
+  };
+
+  scrollTopButton?.addEventListener('click', () => {
+    const behavior = prefersReducedMotion.matches ? 'auto' : 'smooth';
+    window.scrollTo({ top: 0, behavior });
+  });
   const openModal = (card) => {
     if (!modal || !modalText || !modalStatus) return;
     activeCard = card;
@@ -98,6 +109,7 @@
 
   priceFilterToggle?.addEventListener('change', syncPriceFilterFields);
   syncPriceFilterFields();
+  updateScrollTopButton();
 
   if (genreSlider) {
     const track = genreSlider.querySelector('[data-genre-track]');
@@ -300,6 +312,7 @@
     }
   });
 
+  window.addEventListener('scroll', updateScrollTopButton, { passive: true });
   modalSave?.addEventListener('click', async () => {
     if (!activeCard || !modalText || !modalStatus || !modalSave) return;
     const itemCode = activeCard.dataset.itemCode;

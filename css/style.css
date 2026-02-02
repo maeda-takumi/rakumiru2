@@ -20,6 +20,8 @@ body {
   color: var(--text);
 }
 
+.brand__link { display: inline-flex; align-items: center; }
+.brand__logo { height: 55px; width: auto; display: block; }
 
 .container {
   width: min(960px, 100%);
@@ -31,7 +33,7 @@ body {
 .app-header {
   background: var(--primary);
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
-  padding: 24px 0 16px;
+  padding: 10px 0 10px;
 }
 
 .app-header__inner {
@@ -98,11 +100,11 @@ main {
 
 .panel {
   background: var(--panel);
-  border: 1px solid rgba(15, 23, 42, 0.05);
+  /* border: 1px solid rgba(15, 23, 42, 0.05); */
   border-radius: 16px;
   padding: 20px ;
   margin-bottom: 20px;
-  box-shadow: var(--shadow-soft);
+  /* box-shadow: var(--shadow-soft); */
 }
 
 .panel__header {
@@ -235,11 +237,11 @@ select:disabled {
 .ranking-list {
   display: grid;
   gap: 16px;
-  max-height: 720px;
+  /* max-height: 720px; */
   overflow-y: auto;
   /* padding-right: 4px; */
   padding-top: 5px;
-  padding-bottom: 400px;
+  /* padding-bottom: 400px; */
   /* margin-top: 20px; */
 }
 
@@ -386,6 +388,8 @@ h2{
     line-height: 1.6;
     border: 1px solid rgba(15, 23, 42, 0.05);
     height: 100%;
+    max-height: 156px;
+    overflow: auto;
 }
 
 .rank-card__description p {
@@ -505,6 +509,42 @@ h2{
   font-size: 0.85rem;
 }
 
+.scroll-top-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 56px;
+  height: 56px;
+  padding: 4px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: var(--shadow-float);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+  z-index: 900;
+}
+
+.scroll-top-button img {
+  width: 48px;
+  height: 48px;
+  display: block;
+}
+
+.scroll-top-button.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scroll-top-button:focus-visible {
+  outline: 2px solid rgba(15, 23, 42, 0.4);
+  outline-offset: 4px;
+}
 .modal {
   position: fixed;
   inset: 0;
@@ -575,7 +615,11 @@ h2{
   cursor: pointer;
   color: var(--muted);
 }
-
+.sort_frame{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 .modal__textarea {
     width: 100%;
     border-radius: 12px;
@@ -585,6 +629,7 @@ h2{
     resize: vertical;
     min-height: 350px;
     line-height: 1.5;
+    font-size: 16px;
 }
 
 .settings-form {
@@ -708,14 +753,15 @@ h2{
 }
 
 .genre-sort {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0px;
+    border-radius: 12px;
+    background: #fff;
+    /* border: 1px solid var(--border); */
+    padding-bottom: 0px;
 }
 
 .genre-sort__label {
@@ -728,7 +774,7 @@ h2{
 .genre-sort__field {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
   font-size: 0.9rem;
   color: var(--text);
 }
@@ -739,7 +785,6 @@ h2{
   padding: 6px 10px;
   background: #fff;
   font-size: 0.9rem;
-  min-width: 150px;
 }
 
 .genre-slider__viewport {

@@ -4,6 +4,9 @@
       <p>RAKUMiRU</p>
     </div>
   </footer>
+  <button class="scroll-top-button" id="scroll-top-button" aria-label="ページトップへ">
+    <img src="img/top.png" alt="" />
+  </button>
   <div class="modal" id="api-key-modal" aria-hidden="true">
     <div class="modal__overlay" data-api-key-close></div>
     <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="api-key-modal-title">
