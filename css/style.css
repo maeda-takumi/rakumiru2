@@ -34,6 +34,37 @@ body {
   padding: 24px 0 16px;
 }
 
+.app-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.app-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon-button {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+
+.header-icon-button img {
+  width: auto;
+  height:15px;
+  display: block;
+}
+
 .brand {
   display: flex;
   align-items: center;
@@ -517,6 +548,21 @@ h2{
 .modal__header h3 {
   margin: 0;
   font-size: 1.1rem;
+}
+
+.modal__field {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin: 16px 0 0;
+}
+
+.modal__field input {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  font-size: 0.95rem;
 }
 
 .modal__close {

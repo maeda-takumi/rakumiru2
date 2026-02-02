@@ -20,12 +20,6 @@ if (!$itemCode) {
   exit;
 }
 
-if (!defined('GEMINI_API_KEY') || GEMINI_API_KEY === '') {
-  http_response_code(500);
-  echo json_encode(['success' => false, 'message' => 'Gemini APIキーが設定されていません。'], JSON_UNESCAPED_UNICODE);
-  exit;
-}
-
 try {
   $pdo = createPdo();
   $userId = fetchUserId($pdo, $_SESSION['line_user_id']);
@@ -33,6 +27,13 @@ try {
   if (!$userId) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'ユーザー情報が取得できません。'], JSON_UNESCAPED_UNICODE);
+    exit;
+  }
+
+  $apiKey = fetchUserGeminiApiKey($pdo, $userId);
+  if (!$apiKey) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Gemini APIキーが未設定です。設定から登録してください。'], JSON_UNESCAPED_UNICODE);
     exit;
   }
 
@@ -114,7 +115,7 @@ try {
   ];
 
   $model = 'models/gemini-2.5-flash-lite';
-  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode(GEMINI_API_KEY);
+  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode($apiKey);
   $ch = curl_init($apiUrl);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_POST, true);

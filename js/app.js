@@ -7,6 +7,11 @@
   const modalStatus = document.getElementById('description-modal-status');
   const settingsModal = document.getElementById('settings-modal');
   const settingsOpen = document.getElementById('settings-open');
+  const apiKeyModal = document.getElementById('api-key-modal');
+  const apiKeyOpen = document.getElementById('api-key-open');
+  const apiKeyInput = document.getElementById('api-key-input');
+  const apiKeySave = document.getElementById('api-key-save');
+  const apiKeyStatus = document.getElementById('api-key-status');
   const priceFilterToggle = document.getElementById('price-filter-enabled');
   const priceInputs = Array.from(document.querySelectorAll('[data-price-input]'));
   const priceFilterNote = settingsModal?.querySelector('[data-price-filter-note]');
@@ -47,6 +52,13 @@
     settingsModal.setAttribute('aria-hidden', 'true');
   };
 
+  const closeApiKeyModal = () => {
+    if (!apiKeyModal || !apiKeyInput || !apiKeyStatus) return;
+    apiKeyModal.classList.remove('is-open');
+    apiKeyModal.setAttribute('aria-hidden', 'true');
+    apiKeyStatus.textContent = '';
+    apiKeyInput.value = '';
+  };
   const openModal = (card) => {
     if (!modal || !modalText || !modalStatus) return;
     activeCard = card;
@@ -70,6 +82,12 @@
   };
 
   settingsOpen?.addEventListener('click', openSettingsModal);
+  apiKeyOpen?.addEventListener('click', () => {
+    if (!apiKeyModal || !apiKeyInput) return;
+    apiKeyModal.classList.add('is-open');
+    apiKeyModal.setAttribute('aria-hidden', 'false');
+    apiKeyInput.focus();
+  });
 
   const syncPriceFilterFields = () => {
     if (!priceFilterToggle || priceInputs.length === 0) return;
@@ -256,6 +274,9 @@
     if (target.closest('[data-settings-close]')) {
       closeSettingsModal();
     }
+    if (target.closest('[data-api-key-close]')) {
+      closeApiKeyModal();
+    }
   });
 
   modalSave?.addEventListener('click', async () => {
@@ -293,6 +314,33 @@
       modalStatus.textContent = error instanceof Error ? error.message : '保存に失敗しました。';
     } finally {
       modalSave.disabled = false;
+    }
+  });
+  apiKeySave?.addEventListener('click', async () => {
+    if (!apiKeyInput || !apiKeySave || !apiKeyStatus) return;
+    const apiKey = apiKeyInput.value.trim();
+    if (!apiKey) {
+      apiKeyStatus.textContent = 'APIキーを入力してください。';
+      return;
+    }
+    apiKeySave.disabled = true;
+    apiKeyStatus.textContent = '確認中...';
+    try {
+      const response = await fetch(`${apiBase}gemini_key_save.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ api_key: apiKey }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '保存に失敗しました。');
+      }
+      apiKeyStatus.textContent = '保存しました。';
+      setTimeout(closeApiKeyModal, 600);
+    } catch (error) {
+      apiKeyStatus.textContent = error instanceof Error ? error.message : '保存に失敗しました。';
+    } finally {
+      apiKeySave.disabled = false;
     }
   });
 })();

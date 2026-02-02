@@ -18,9 +18,16 @@ $basePath = $basePath === '' ? '/' : $basePath . '/';
       data-ai-daily-limit="<?= isset($aiDailyLimit) ? htmlspecialchars((string) $aiDailyLimit, ENT_QUOTES, 'UTF-8') : '' ?>">
   <header class="app-header">
     <div class="container">
-      <div class="brand">
-        <span class="brand__dot"></span>
-        <span class="brand__title">RAKUMiRU</span>
+      <div class="app-header__inner">
+        <div class="brand">
+          <span class="brand__dot"></span>
+          <span class="brand__title">RAKUMiRU</span>
+        </div>
+        <div class="app-header__actions">
+          <button class="header-icon-button" type="button" id="api-key-open" aria-haspopup="dialog" aria-controls="api-key-modal">
+            <img src="img/api.png" alt="Gemini APIキー設定" />
+          </button>
+        </div>
       </div>
       <!-- <p class="brand__subtitle">ランキング変動をスマホで見やすく</p> -->
     </div>

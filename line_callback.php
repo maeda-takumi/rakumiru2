@@ -65,6 +65,24 @@ function linePost(string $url, array $fields): array {
   return is_array($decoded) ? $decoded : [];
 }
 
+function lineGet(string $url, string $accessToken): array {
+  $ch = curl_init($url);
+  curl_setopt_array($ch, [
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPGET => true,
+    CURLOPT_HTTPHEADER => ['Authorization: Bearer ' . $accessToken],
+  ]);
+  $response = curl_exec($ch);
+  $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+  curl_close($ch);
+
+  if ($response === false || $status < 200 || $status >= 300) {
+    return [];
+  }
+
+  $decoded = json_decode($response, true);
+  return is_array($decoded) ? $decoded : [];
+}
 $redirectUri = LINE_REDIRECT_URI;
 
 $tokenResponse = linePost('https://api.line.me/oauth2/v2.1/token', [
@@ -79,6 +97,10 @@ if (empty($tokenResponse['id_token'])) {
   renderLineOnlyMessage();
 }
 
+$lineProfile = [];
+if (!empty($tokenResponse['access_token'])) {
+  $lineProfile = lineGet('https://api.line.me/oauth2/v2.1/userinfo', $tokenResponse['access_token']);
+}
 $verifyResponse = linePost('https://api.line.me/oauth2/v2.1/verify', [
   'id_token' => $tokenResponse['id_token'],
   'client_id' => LINE_CHANNEL_ID,
@@ -104,12 +126,14 @@ function columnExists(PDO $pdo, string $table, string $column): bool {
 $hasCreatedAt = columnExists($pdo, 'users', 'created_at');
 $hasUpdatedAt = columnExists($pdo, 'users', 'updated_at');
 $hasLastLoginAt = columnExists($pdo, 'users', 'last_login_at');
+$hasLineName = columnExists($pdo, 'users', 'line_name');
 
 $stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
 $stmt->execute(['line_user_id' => $lineUserId]);
 $existing = $stmt->fetchColumn();
 
 $now = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
+$lineName = isset($lineProfile['name']) ? trim((string) $lineProfile['name']) : '';
 
 if ($existing) {
   $fields = [];
@@ -118,6 +142,9 @@ if ($existing) {
   }
   if ($hasLastLoginAt) {
     $fields[] = 'last_login_at = :last_login_at';
+  }
+  if ($hasLineName && $lineName !== '') {
+    $fields[] = 'line_name = COALESCE(NULLIF(line_name, \'\'), :line_name)';
   }
 
   if ($fields) {
@@ -129,6 +156,9 @@ if ($existing) {
     if ($hasLastLoginAt) {
       $params['last_login_at'] = $now;
     }
+    if ($hasLineName && $lineName !== '') {
+      $params['line_name'] = $lineName;
+    }
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
   }
@@ -136,6 +166,11 @@ if ($existing) {
   $columns = ['line_user_id'];
   $placeholders = [':line_user_id'];
   $params = ['line_user_id' => $lineUserId];
+  if ($hasLineName && $lineName !== '') {
+    $columns[] = 'line_name';
+    $placeholders[] = ':line_name';
+    $params['line_name'] = $lineName;
+  }
 
   if ($hasCreatedAt) {
     $columns[] = 'created_at';
