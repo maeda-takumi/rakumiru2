@@ -9,6 +9,8 @@
   const settingsOpen = document.getElementById('settings-open');
   const genreSlider = document.querySelector('[data-genre-slider]');
   const apiBase = document.body?.dataset.apiBase || '/';
+  const aiDailyLimit = Number(document.body?.dataset.aiDailyLimit ?? '');
+  let aiRemaining = Number(document.body?.dataset.aiRemaining ?? '');
   let activeCard = null;
 
 
@@ -177,6 +179,16 @@
           window.alert('商品情報が取得できません。');
           return;
         }
+        const limitText = Number.isFinite(aiDailyLimit) ? String(aiDailyLimit) : '3';
+        const remainingText = Number.isFinite(aiRemaining) ? `${aiRemaining}回` : '不明';
+        const confirmMessage = `AI説明を生成しますか？\n残り使用回数: ${remainingText}\n※1ユーザ${limitText}回まで`;
+        if (!window.confirm(confirmMessage)) {
+          return;
+        }
+        if (Number.isFinite(aiRemaining) && aiRemaining <= 0) {
+          window.alert('本日の利用回数が上限に達しています。明日以降に再度お試しください。');
+          return;
+        }
         const descriptionEl = card.querySelector('.rank-card__description');
         const previousHtml = descriptionEl?.innerHTML ?? '';
         const previousDescription = descriptionEl?.dataset.description ?? '';
@@ -205,6 +217,10 @@
             if (descriptionEl) {
               descriptionEl.dataset.description = description;
               descriptionEl.innerHTML = `<p>${escapeHtml(description).replace(/\n/g, '<br>')}</p>`;
+            }
+            if (Number.isFinite(aiRemaining) && aiRemaining > 0) {
+              aiRemaining -= 1;
+              document.body.dataset.aiRemaining = String(aiRemaining);
             }
           })
           .catch((error) => {

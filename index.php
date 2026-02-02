@@ -59,11 +59,28 @@ $rankings = [];
 $previousMap = [];
 $dropouts = [];
 $genreData = [];
+$aiDailyLimit = 3;
+$aiRemaining = null;
 
 if ($pdo) {
   $stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
   $stmt->execute(['line_user_id' => $_SESSION['line_user_id']]);
   $userId = $stmt->fetchColumn();
+
+  if ($userId) {
+    $stmt = $pdo->prepare('SELECT gemini_daily_count, gemini_last_used_date FROM users WHERE id = :id LIMIT 1');
+    $stmt->execute(['id' => $userId]);
+    $usageRow = $stmt->fetch();
+    if ($usageRow) {
+      $today = (new DateTimeImmutable('today'))->format('Y-m-d');
+      $count = (int) ($usageRow['gemini_daily_count'] ?? 0);
+      $lastDate = $usageRow['gemini_last_used_date'] ?? null;
+      if ($lastDate !== $today) {
+        $count = 0;
+      }
+      $aiRemaining = max(0, $aiDailyLimit - $count);
+    }
+  }
 
   $genres = $pdo->query("SELECT genre_id, genre_name FROM genres WHERE depth = 0 AND is_active = 1 ORDER BY genre_name")->fetchAll();
 
