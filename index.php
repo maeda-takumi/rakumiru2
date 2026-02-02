@@ -38,6 +38,16 @@ $filterReviewUpOnly = false;
 $minPrice = null;
 $maxPrice = null;
 $settingsError = null;
+$defaultSettings = [
+  'genre_ids' => [100804, 100533, 558944, 215783, 100316, 100939, 503190],
+  'sort_key' => 'rank',
+  'filter_sale_only' => 0,
+  'filter_new_only' => 0,
+  'filter_dropout_only' => 0,
+  'filter_review_up_only' => 1,
+  'min_price' => 1500,
+  'max_price' => 2980,
+];
 
 
 $selectedGenreIds = filter_input(INPUT_GET, 'genre_ids', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
@@ -95,6 +105,27 @@ if ($pdo) {
     $savedSettings = $stmt->fetch();
   }
 
+  if ($userId && !$savedSettings) {
+    $defaultSettingsRow = $defaultSettings;
+    $defaultSettingsRow['genre_ids'] = json_encode($defaultSettings['genre_ids'], JSON_UNESCAPED_UNICODE);
+    $stmt = $pdo->prepare(
+      'INSERT INTO user_settings (user_id, genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, min_price, max_price)
+       VALUES (:user_id, :genre_ids, :sort_key, :filter_sale_only, :filter_new_only, :filter_dropout_only, :filter_review_up_only, :min_price, :max_price)'
+    );
+    $stmt->execute([
+      'user_id' => $userId,
+      'genre_ids' => $defaultSettingsRow['genre_ids'],
+      'sort_key' => $defaultSettings['sort_key'],
+      'filter_sale_only' => $defaultSettings['filter_sale_only'],
+      'filter_new_only' => $defaultSettings['filter_new_only'],
+      'filter_dropout_only' => $defaultSettings['filter_dropout_only'],
+      'filter_review_up_only' => $defaultSettings['filter_review_up_only'],
+      'min_price' => $defaultSettings['min_price'],
+      'max_price' => $defaultSettings['max_price'],
+    ]);
+    $savedSettings = $defaultSettingsRow;
+  }
+
   $hasSubmittedSettings = isset($_GET['save_settings']);
   if ($hasSubmittedSettings) {
     $selectedGenreIds = filter_input(INPUT_GET, 'genre_ids', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
@@ -115,17 +146,16 @@ if ($pdo) {
 
     if ($userId && !$settingsError) {
       $stmt = $pdo->prepare(
-        'INSERT INTO user_settings (user_id, genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, filter_review_up_only, min_price, max_price)
-         VALUES (:user_id, :genre_ids, :sort_key, :filter_sale_only, :filter_new_only, :filter_dropout_only, :filter_review_up_only, :min_price, :max_price)
-         ON DUPLICATE KEY UPDATE
-           genre_ids = VALUES(genre_ids),
-           sort_key = VALUES(sort_key),
-           filter_sale_only = VALUES(filter_sale_only),
-           filter_new_only = VALUES(filter_new_only),
-           filter_dropout_only = VALUES(filter_dropout_only),
-           filter_review_up_only = VALUES(filter_review_up_only),
-           min_price = VALUES(min_price),
-           max_price = VALUES(max_price)'
+        'UPDATE user_settings
+         SET genre_ids = :genre_ids,
+             sort_key = :sort_key,
+             filter_sale_only = :filter_sale_only,
+             filter_new_only = :filter_new_only,
+             filter_dropout_only = :filter_dropout_only,
+             filter_review_up_only = :filter_review_up_only,
+             min_price = :min_price,
+             max_price = :max_price
+         WHERE user_id = :user_id'
       );
       $stmt->execute([
         'user_id' => $userId,
@@ -183,9 +213,27 @@ if ($pdo) {
       $stmt = $pdo->prepare("SELECT MAX(captured_at) AS latest_at FROM rank_daily WHERE genre_id = :genre AND captured_date = :latest");
       $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
       $latestCapturedAt = $stmt->fetchColumn();
-      $stmt = $pdo->prepare("SELECT MAX(captured_date) AS prev_date FROM rank_daily WHERE genre_id = :genre AND captured_date < :latest");
-      $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
-      $previousDate = $stmt->fetchColumn();
+      if ($latestCapturedAt) {
+        $stmt = $pdo->prepare(
+          "SELECT MAX(captured_at) AS prev_at
+           FROM rank_daily
+           WHERE genre_id = :genre AND captured_date = :latest AND captured_at < :latest_at"
+        );
+        $stmt->execute(['genre' => $genreId, 'latest' => $latestDate, 'latest_at' => $latestCapturedAt]);
+        $previousCapturedAt = $stmt->fetchColumn();
+        if ($previousCapturedAt) {
+          $previousDate = $latestDate;
+        } else {
+          $stmt = $pdo->prepare("SELECT MAX(captured_date) AS prev_date FROM rank_daily WHERE genre_id = :genre AND captured_date < :latest");
+          $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
+          $previousDate = $stmt->fetchColumn();
+          if ($previousDate) {
+            $stmt = $pdo->prepare("SELECT MAX(captured_at) AS prev_at FROM rank_daily WHERE genre_id = :genre AND captured_date = :prev");
+            $stmt->execute(['genre' => $genreId, 'prev' => $previousDate]);
+            $previousCapturedAt = $stmt->fetchColumn();
+          }
+        }
+      }
 
       $stmt = $pdo->prepare(
         "SELECT rd.rank_pos, rd.item_code, rd.price, rd.review_count, rd.point_rate, rd.sale_start_at, rd.sale_end_at,
@@ -199,10 +247,7 @@ if ($pdo) {
       $stmt->execute(['genre' => $genreId, 'latest' => $latestDate, 'latest_at' => $latestCapturedAt]);
       $rankings = $stmt->fetchAll();
 
-      if ($previousDate) {
-        $stmt = $pdo->prepare("SELECT MAX(captured_at) AS prev_at FROM rank_daily WHERE genre_id = :genre AND captured_date = :prev");
-        $stmt->execute(['genre' => $genreId, 'prev' => $previousDate]);
-        $previousCapturedAt = $stmt->fetchColumn();
+      if ($previousDate && $previousCapturedAt) {
         $stmt = $pdo->prepare(
           "SELECT item_code, rank_pos, price, review_count
            FROM rank_daily
@@ -475,11 +520,6 @@ include __DIR__ . '/header.php';
             </div>
           <?php endforeach; ?>
         </div>
-      </div>
-      <div class="genre-slider__dots" role="tablist" aria-label="ジャンルを切り替え">
-        <?php foreach ($genreData as $index => $genre): ?>
-          <button class="genre-slider__dot" type="button" data-genre-dot data-genre-index="<?= $index ?>" aria-label="<?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?>を表示"></button>
-        <?php endforeach; ?>
       </div>
     </div>
   <?php endif; ?>
