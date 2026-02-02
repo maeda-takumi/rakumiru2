@@ -30,6 +30,14 @@ try {
 } catch (PDOException $e) {
   $error = 'データベースに接続できませんでした。';
 }
+$selectedGenreIds = [];
+$filterSaleOnly = false;
+$filterNewOnly = false;
+$filterDropoutOnly = false;
+$minPrice = null;
+$maxPrice = null;
+$settingsError = null;
+
 
 $selectedGenreIds = filter_input(INPUT_GET, 'genre_ids', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
 $selectedGenreIds = is_array($selectedGenreIds) ? $selectedGenreIds : [];
@@ -61,6 +69,71 @@ if ($pdo) {
     $genreMap[(int) $genre['genre_id']] = $genre['genre_name'];
   }
 
+  $savedSettings = null;
+  if ($userId) {
+    $stmt = $pdo->prepare('SELECT genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, min_price, max_price FROM user_settings WHERE user_id = :user_id LIMIT 1');
+    $stmt->execute(['user_id' => $userId]);
+    $savedSettings = $stmt->fetch();
+  }
+
+  $hasSubmittedSettings = isset($_GET['save_settings']);
+  if ($hasSubmittedSettings) {
+    $selectedGenreIds = filter_input(INPUT_GET, 'genre_ids', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+    $selectedGenreIds = is_array($selectedGenreIds) ? $selectedGenreIds : [];
+    $selectedGenreIds = array_values(array_unique(array_filter(array_map('intval', $selectedGenreIds))));
+    $filterSaleOnly = filter_input(INPUT_GET, 'sale_only') === '1';
+    $filterNewOnly = filter_input(INPUT_GET, 'new_only') === '1';
+    $filterDropoutOnly = filter_input(INPUT_GET, 'dropout_only') === '1';
+    $minPrice = filter_input(INPUT_GET, 'min_price', FILTER_VALIDATE_INT);
+    $maxPrice = filter_input(INPUT_GET, 'max_price', FILTER_VALIDATE_INT);
+
+    if ($minPrice === null || $minPrice === false || $maxPrice === null || $maxPrice === false) {
+      $settingsError = '価格は最低・最高の両方を入力してください。';
+    } elseif ($minPrice > $maxPrice) {
+      $settingsError = '最低価格は最高価格以下にしてください。';
+    }
+
+    if ($userId && !$settingsError) {
+      $stmt = $pdo->prepare(
+        'INSERT INTO user_settings (user_id, genre_ids, sort_key, filter_sale_only, filter_new_only, filter_dropout_only, min_price, max_price)
+         VALUES (:user_id, :genre_ids, :sort_key, :filter_sale_only, :filter_new_only, :filter_dropout_only, :min_price, :max_price)
+         ON DUPLICATE KEY UPDATE
+           genre_ids = VALUES(genre_ids),
+           sort_key = VALUES(sort_key),
+           filter_sale_only = VALUES(filter_sale_only),
+           filter_new_only = VALUES(filter_new_only),
+           filter_dropout_only = VALUES(filter_dropout_only),
+           min_price = VALUES(min_price),
+           max_price = VALUES(max_price)'
+      );
+      $stmt->execute([
+        'user_id' => $userId,
+        'genre_ids' => json_encode($selectedGenreIds, JSON_UNESCAPED_UNICODE),
+        'sort_key' => 'rank',
+        'filter_sale_only' => $filterSaleOnly ? 1 : 0,
+        'filter_new_only' => $filterNewOnly ? 1 : 0,
+        'filter_dropout_only' => $filterDropoutOnly ? 1 : 0,
+        'min_price' => $minPrice,
+        'max_price' => $maxPrice,
+      ]);
+    }
+  } elseif ($savedSettings) {
+    $savedGenreIds = [];
+    if (!empty($savedSettings['genre_ids'])) {
+      $decoded = json_decode($savedSettings['genre_ids'], true);
+      if (is_array($decoded)) {
+        $savedGenreIds = $decoded;
+      } else {
+        $savedGenreIds = array_filter(array_map('intval', explode(',', (string) $savedSettings['genre_ids'])));
+      }
+    }
+    $selectedGenreIds = array_values(array_unique(array_filter(array_map('intval', $savedGenreIds))));
+    $filterSaleOnly = !empty($savedSettings['filter_sale_only']);
+    $filterNewOnly = !empty($savedSettings['filter_new_only']);
+    $filterDropoutOnly = !empty($savedSettings['filter_dropout_only']);
+    $minPrice = $savedSettings['min_price'] !== null ? (int) $savedSettings['min_price'] : null;
+    $maxPrice = $savedSettings['max_price'] !== null ? (int) $savedSettings['max_price'] : null;
+  }
   $selectedGenreIds = array_values(array_filter(
     $selectedGenreIds,
     fn (int $genreId): bool => isset($genreMap[$genreId])
@@ -83,7 +156,7 @@ if ($pdo) {
 
     if ($latestDate) {
       $stmt = $pdo->prepare("SELECT MAX(captured_date) AS prev_date FROM rank_daily WHERE genre_id = :genre AND captured_date < :latest");
-      $stmt->execute(['genre' => $selectedGenre, 'latest' => $latestDate]);
+      $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
       $previousDate = $stmt->fetchColumn();
 
       $stmt = $pdo->prepare(
@@ -157,6 +230,32 @@ if ($pdo) {
           return true;
         }
       ));
+    }
+    if ($minPrice !== null && $maxPrice !== null) {
+      $displayRankings = array_values(array_filter(
+        $displayRankings,
+        function (array $row) use ($minPrice, $maxPrice): bool {
+          $price = $row['price'] ?? null;
+          if ($price === null) {
+            return false;
+          }
+          $price = (int) $price;
+          return $price >= $minPrice && $price <= $maxPrice;
+        }
+      ));
+      if ($dropouts) {
+        $dropouts = array_values(array_filter(
+          $dropouts,
+          function (array $row) use ($minPrice, $maxPrice): bool {
+            $price = $row['price'] ?? null;
+            if ($price === null) {
+              return false;
+            }
+            $price = (int) $price;
+            return $price >= $minPrice && $price <= $maxPrice;
+          }
+        ));
+      }
     }
     if ($filterDropoutOnly) {
       $displayRankings = [];
@@ -391,9 +490,26 @@ include __DIR__ . '/header.php';
           ランク外落ちのみ
         </label>
       </div>
+      <div class="settings-form__group">
+        <span class="settings-form__label">価格帯</span>
+        <div class="settings-form__price">
+          <label class="settings-form__field">
+            <span>最低価格</span>
+            <input type="number" name="min_price" min="0" step="1" value="<?= $minPrice !== null ? (int) $minPrice : '' ?>" required>
+          </label>
+          <span class="settings-form__separator">〜</span>
+          <label class="settings-form__field">
+            <span>最高価格</span>
+            <input type="number" name="max_price" min="0" step="1" value="<?= $maxPrice !== null ? (int) $maxPrice : '' ?>" required>
+          </label>
+        </div>
+      </div>
+      <?php if ($settingsError): ?>
+        <p class="settings-form__error"><?= htmlspecialchars($settingsError, ENT_QUOTES, 'UTF-8') ?></p>
+      <?php endif; ?>
       <div class="modal__actions">
         <button type="button" class="modal__button modal__button--ghost" data-settings-close>キャンセル</button>
-        <button type="submit" class="modal__button">保存</button>
+        <button type="submit" class="modal__button" name="save_settings" value="1">保存</button>
       </div>
     </form>
   </div>
