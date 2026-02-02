@@ -335,7 +335,6 @@ include __DIR__ . '/header.php';
             <div class="genre-slide" data-genre-slide data-genre-name="<?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?>">
               <div class="genre-section">
                 <div class="genre-section__header">
-                  <h3 class="genre-section__title"><?= htmlspecialchars($genre['genre_name'], ENT_QUOTES, 'UTF-8') ?></h3>
                   <?php if ($genre['latest_date']): ?>
                     <div class="panel__meta">
                       <span>最新: <?= htmlspecialchars($genre['latest_date'], ENT_QUOTES, 'UTF-8') ?></span>
