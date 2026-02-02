@@ -46,17 +46,20 @@ body {
   align-items: center;
   gap: 12px;
 }
-
+.app-header .container{
+  margin-top: 0px;
+}
 .header-icon-button {
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: #fff;
   border-radius: 999px;
-  padding: 8px;
+  /* padding: 8px; */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-soft);
+    padding: 10px 15px;
 }
 
 .header-icon-button img {
@@ -235,7 +238,7 @@ select:disabled {
   max-height: 720px;
   overflow-y: auto;
   /* padding-right: 4px; */
-  padding-top: 20px;
+  padding-top: 5px;
   padding-bottom: 400px;
   /* margin-top: 20px; */
 }
@@ -661,7 +664,7 @@ h2{
 
 .genre-slider {
   display: grid;
-  gap: 16px;
+  gap: 10px;
   margin-top: 16px;
 }
 
@@ -735,6 +738,7 @@ h2{
   padding: 6px 10px;
   background: #fff;
   font-size: 0.9rem;
+  min-width: 150px;
 }
 
 .genre-slider__viewport {
@@ -830,10 +834,12 @@ h2{
   color: var(--muted);
   min-height: 1em;
 }
-
+.sort_label{ 
+    min-width: 35px;
+}
 @media (max-width: 640px) {
   .genre-slider__controls {
-    gap: 8px;
+    gap: 10px;
   }
 
   .genre-sort {
