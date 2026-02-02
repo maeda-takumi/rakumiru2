@@ -7,8 +7,8 @@
   const modalStatus = document.getElementById('description-modal-status');
   const settingsModal = document.getElementById('settings-modal');
   const settingsOpen = document.getElementById('settings-open');
-  const priceFilterToggle = settingsModal?.querySelector('[data-price-filter-toggle]');
-  const priceFilterInputs = settingsModal?.querySelectorAll('[data-price-filter-input]');
+  const priceFilterToggle = document.getElementById('price-filter-enabled');
+  const priceInputs = Array.from(document.querySelectorAll('[data-price-input]'));
   const priceFilterNote = settingsModal?.querySelector('[data-price-filter-note]');
   const genreSlider = document.querySelector('[data-genre-slider]');
   const apiBase = document.body?.dataset.apiBase || '/';
@@ -71,25 +71,17 @@
 
   settingsOpen?.addEventListener('click', openSettingsModal);
 
-  const updatePriceFilterState = () => {
-    if (!priceFilterToggle || !priceFilterInputs) return;
+  const syncPriceFilterFields = () => {
+    if (!priceFilterToggle || priceInputs.length === 0) return;
     const enabled = priceFilterToggle.checked;
-    priceFilterInputs.forEach((input) => {
+    priceInputs.forEach((input) => {
       input.disabled = !enabled;
-      if (enabled) {
-        input.setAttribute('required', '');
-      } else {
-        input.removeAttribute('required');
-      }
+      input.required = enabled;
     });
-    if (priceFilterNote) {
-      priceFilterNote.textContent = enabled
-        ? '価格帯を入力するときは最低・最高の両方を入力してください。'
-        : '価格帯を指定する場合にONにしてください。';
-    }
   };
-  priceFilterToggle?.addEventListener('change', updatePriceFilterState);
-  updatePriceFilterState();
+
+  priceFilterToggle?.addEventListener('change', syncPriceFilterFields);
+  syncPriceFilterFields();
 
   if (genreSlider) {
     const track = genreSlider.querySelector('[data-genre-track]');

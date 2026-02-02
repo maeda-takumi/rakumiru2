@@ -39,6 +39,7 @@ $filterReviewUpOnly = false;
 $filterPriceEnabled = false;
 $minPrice = null;
 $maxPrice = null;
+$priceFilterEnabled = false;
 $settingsError = null;
 $defaultSettings = [
   'genre_ids' => [100804, 100533, 558944, 215783, 100316, 100939, 503190],
@@ -51,6 +52,7 @@ $defaultSettings = [
   'min_price' => 1500,
   'max_price' => 2980,
 ];
+$priceFilterEnabled = $defaultSettings['min_price'] !== null && $defaultSettings['max_price'] !== null;
 
 
 $selectedGenreIds = filter_input(INPUT_GET, 'genre_ids', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
@@ -143,15 +145,13 @@ if ($pdo) {
     $minPrice = filter_input(INPUT_GET, 'min_price', FILTER_VALIDATE_INT);
     $maxPrice = filter_input(INPUT_GET, 'max_price', FILTER_VALIDATE_INT);
 
-    if ($filterPriceEnabled) {
-      if ($minPrice === null || $minPrice === false || $maxPrice === null || $maxPrice === false) {
-        $settingsError = '価格は最低・最高の両方を入力してください。';
-      } elseif ($minPrice > $maxPrice) {
-        $settingsError = '最低価格は最高価格以下にしてください。';
-      }
-    } else {
+   if (!$priceFilterEnabled) {
       $minPrice = null;
       $maxPrice = null;
+    } elseif ($minPrice === null || $minPrice === false || $maxPrice === null || $maxPrice === false) {
+      $settingsError = '価格は最低・最高の両方を入力してください。';
+    } elseif ($minPrice > $maxPrice) {
+      $settingsError = '最低価格は最高価格以下にしてください。';
     }
 
     if ($userId && !$settingsError) {
@@ -199,6 +199,7 @@ if ($pdo) {
     $filterPriceEnabled = !empty($savedSettings['filter_price_enabled']);
     $minPrice = $savedSettings['min_price'] !== null ? (int) $savedSettings['min_price'] : null;
     $maxPrice = $savedSettings['max_price'] !== null ? (int) $savedSettings['max_price'] : null;
+    $priceFilterEnabled = $minPrice !== null && $maxPrice !== null;
   }
   $selectedGenreIds = array_values(array_filter(
     $selectedGenreIds,
@@ -306,7 +307,7 @@ if ($pdo) {
     }
 
     $displayRankings = $rankings;
-    if ($filterPriceEnabled && $minPrice !== null && $maxPrice !== null) {
+    if ($priceFilterEnabled && $minPrice !== null && $maxPrice !== null) {
       $displayRankings = array_values(array_filter(
         $displayRankings,
         function (array $row) use ($filterSaleOnly, $filterNewOnly, $filterReviewUpOnly, $previousMap): bool {
@@ -574,20 +575,20 @@ include __DIR__ . '/header.php';
       </div>
       <div class="settings-form__group">
         <span class="settings-form__label">価格帯</span>
-        <label class="settings-form__checkbox">
-          <input type="checkbox" name="price_filter_enabled" value="1" <?= $filterPriceEnabled ? 'checked' : '' ?> data-price-filter-toggle>
+        <label class="settings-form__checkbox settings-form__checkbox--inline">
+          <input type="checkbox" name="price_filter_enabled" value="1" id="price-filter-enabled" <?= $priceFilterEnabled ? 'checked' : '' ?>>
           価格で絞り込む
         </label>
         <p class="settings-form__note" data-price-filter-note>価格帯を指定する場合にONにしてください。</p>
         <div class="settings-form__price">
           <label class="settings-form__field">
             <span>最低価格</span>
-            <input type="number" name="min_price" min="0" step="1" value="<?= $minPrice !== null ? (int) $minPrice : '' ?>" <?= $filterPriceEnabled ? 'required' : '' ?> <?= $filterPriceEnabled ? '' : 'disabled' ?> data-price-filter-input>
+            <input type="number" name="min_price" min="0" step="1" value="<?= $minPrice !== null ? (int) $minPrice : '' ?>" <?= $priceFilterEnabled ? 'required' : '' ?> <?= $priceFilterEnabled ? '' : 'disabled' ?> data-price-input>
           </label>
           <span class="settings-form__separator">〜</span>
           <label class="settings-form__field">
             <span>最高価格</span>
-            <input type="number" name="max_price" min="0" step="1" value="<?= $maxPrice !== null ? (int) $maxPrice : '' ?>" <?= $filterPriceEnabled ? 'required' : '' ?> <?= $filterPriceEnabled ? '' : 'disabled' ?> data-price-filter-input>
+            <input type="number" name="max_price" min="0" step="1" value="<?= $maxPrice !== null ? (int) $maxPrice : '' ?>" <?= $priceFilterEnabled ? 'required' : '' ?> <?= $priceFilterEnabled ? '' : 'disabled' ?> data-price-input>
           </label>
         </div>
       </div>

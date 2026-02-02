@@ -570,6 +570,9 @@ h2{
   font-size: 0.95rem;
 }
 
+.settings-form__checkbox--inline {
+  margin-top: 4px;
+}
 .settings-form__price {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -592,6 +595,10 @@ h2{
   width: 100%;
 }
 
+.settings-form__field input:disabled {
+  background: rgba(15, 23, 42, 0.05);
+  color: var(--muted);
+}
 .settings-form__separator {
   font-size: 0.9rem;
   color: var(--muted);
