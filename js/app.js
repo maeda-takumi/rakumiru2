@@ -5,14 +5,12 @@
   const modalText = document.getElementById('description-modal-text');
   const modalSave = document.getElementById('description-modal-save');
   const modalStatus = document.getElementById('description-modal-status');
+  const settingsModal = document.getElementById('settings-modal');
+  const settingsOpen = document.getElementById('settings-open');
   const apiBase = document.body?.dataset.apiBase || '/';
   let activeCard = null;
 
-  if (genreSelect && form) {
-    genreSelect.addEventListener('change', () => {
-      form.submit();
-    });
-  }
+
 
   const escapeHtml = (value) =>
     value
@@ -37,6 +35,12 @@
     activeCard = null;
   };
 
+  const closeSettingsModal = () => {
+    if (!settingsModal) return;
+    settingsModal.classList.remove('is-open');
+    settingsModal.setAttribute('aria-hidden', 'true');
+  };
+
   const openModal = (card) => {
     if (!modal || !modalText || !modalStatus) return;
     activeCard = card;
@@ -48,6 +52,18 @@
     modal.setAttribute('aria-hidden', 'false');
     modalText.focus();
   };
+
+  const openSettingsModal = () => {
+    if (!settingsModal) return;
+    settingsModal.classList.add('is-open');
+    settingsModal.setAttribute('aria-hidden', 'false');
+    const firstField = settingsModal.querySelector('select, input, button');
+    if (firstField instanceof HTMLElement) {
+      firstField.focus();
+    }
+  };
+
+  settingsOpen?.addEventListener('click', openSettingsModal);
 
   document.addEventListener('click', (event) => {
     const target = event.target;
@@ -140,6 +156,9 @@
 
     if (target.closest('[data-modal-close]')) {
       closeModal();
+    }
+    if (target.closest('[data-settings-close]')) {
+      closeSettingsModal();
     }
   });
 

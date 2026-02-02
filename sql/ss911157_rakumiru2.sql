@@ -72,6 +72,24 @@ CREATE TABLE `item_descriptions` (
 
 -- --------------------------------------------------------
 --
+-- テーブルの構造 `user_settings`
+--
+
+CREATE TABLE `user_settings` (
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `genre_ids` text DEFAULT NULL,
+  `sort_key` varchar(32) NOT NULL DEFAULT 'rank',
+  `filter_sale_only` tinyint(1) NOT NULL DEFAULT 0,
+  `filter_new_only` tinyint(1) NOT NULL DEFAULT 0,
+  `filter_dropout_only` tinyint(1) NOT NULL DEFAULT 0,
+  `min_price` int(10) UNSIGNED DEFAULT NULL,
+  `max_price` int(10) UNSIGNED DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+--
 -- テーブルの構造 `job_state`
 --
 
@@ -95,34 +113,7 @@ CREATE TABLE `rank_daily` (
   `captured_date` date NOT NULL,
   `captured_at` datetime NOT NULL DEFAULT current_timestamp(),
   `genre_id` bigint(20) UNSIGNED NOT NULL,
-  `rank_pos` tinyint(3) UNSIGNED NOT NULL,
-  `item_code` varchar(128) NOT NULL,
-  `price` int(10) UNSIGNED DEFAULT NULL,
-  `review_count` int(10) UNSIGNED DEFAULT NULL,
-  `point_rate` smallint(5) UNSIGNED DEFAULT NULL,
-  `sale_start_at` datetime DEFAULT NULL,
-  `sale_end_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
---
--- テーブルの構造 `rank_stats_30d`
---
-
-CREATE TABLE `rank_stats_30d` (
-  `genre_id` bigint(20) UNSIGNED NOT NULL,
-  `item_code` varchar(128) NOT NULL,
-  `appear_days_30d` smallint(5) UNSIGNED NOT NULL DEFAULT 0,
-  `best_rank_30d` tinyint(3) UNSIGNED DEFAULT NULL,
-  `avg_rank_30d` decimal(5,2) DEFAULT NULL,
-  `last_seen_date` date DEFAULT NULL,
-  `last_rank` tinyint(3) UNSIGNED DEFAULT NULL,
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- ダンプしたテーブルのインデックス
+@@ -126,76 +144,89 @@ CREATE TABLE `rank_stats_30d` (
 --
 
 --
@@ -147,6 +138,13 @@ ALTER TABLE `item_descriptions`
   ADD PRIMARY KEY (`user_id`,`item_code`),
   ADD KEY `idx_item_descriptions_user` (`user_id`),
   ADD KEY `idx_item_descriptions_item` (`item_code`);
+
+--
+-- テーブルのインデックス `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD PRIMARY KEY (`user_id`),
+  ADD KEY `idx_sort_key` (`sort_key`);
 
 --
 -- テーブルのインデックス `job_state`
@@ -187,6 +185,12 @@ ALTER TABLE `rank_daily`
 ALTER TABLE `item_descriptions`
   ADD CONSTRAINT `fk_item_desc_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_item_desc_item` FOREIGN KEY (`item_code`) REFERENCES `items` (`item_code`) ON UPDATE CASCADE;
+
+--
+-- テーブルの制約 `user_settings`
+--
+ALTER TABLE `user_settings`
+  ADD CONSTRAINT `fk_user_settings_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON UPDATE CASCADE;
 
 --
 -- テーブルの制約 `rank_stats_30d`

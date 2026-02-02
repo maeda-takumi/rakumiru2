@@ -78,6 +78,24 @@ main {
     /* padding: 0px 20px; */
 }
 
+.panel__header--settings {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.panel__summary {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.panel__summary-divider {
+  margin: 0 6px;
+  color: rgba(107, 114, 128, 0.6);
+}
+
 .panel__meta {
   color: var(--muted);
   font-size: 0.85rem;
@@ -86,6 +104,23 @@ main {
   flex-wrap: wrap;
 }
 
+.settings-button {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  font-size: 0.9rem;
+}
+
+.settings-button img {
+  width: 16px;
+  height: 16px;
+}
 .genre-form {
   display: grid;
   gap: 16px;
@@ -424,6 +459,9 @@ h2{
   z-index: 1;
 }
 
+.modal__panel--settings {
+  gap: 16px;
+}
 .modal__header {
   display: flex;
   justify-content: space-between;
@@ -455,6 +493,28 @@ h2{
     line-height: 1.5;
 }
 
+.settings-form {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-form__group {
+  display: grid;
+  gap: 8px;
+}
+
+.settings-form__label {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.settings-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+}
+
 .modal__actions {
   display: flex;
   justify-content: flex-end;
@@ -484,10 +544,11 @@ h2{
 }
 
 @media (max-width: 640px) {
-  .rank-card__body {
-    /* grid-template-columns: 80px 1fr; */
-
+  .panel__header--settings {
+    flex-direction: column;
+    align-items: flex-start;
   }
+
 
   .rank-card__media img,
   .rank-card__placeholder {
