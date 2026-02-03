@@ -9,6 +9,11 @@ $showAuthenticatedActions = !empty($_SESSION['line_user_id']) && !empty($_SESSIO
   <title>RAKUMiRU</title>
   <!-- <link rel="stylesheet" href="css/style.css"> -->
   <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
+  <?php if (!empty($additionalStyles) && is_array($additionalStyles)): ?>
+    <?php foreach ($additionalStyles as $styleUrl): ?>
+      <link rel="stylesheet" href="<?= htmlspecialchars($styleUrl, ENT_QUOTES, 'UTF-8') ?>">
+    <?php endforeach; ?>
+  <?php endif; ?>
 </head>
 <?php
 $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');

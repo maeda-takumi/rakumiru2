@@ -1,6 +1,6 @@
 :root {
   color-scheme: light;
-  --auth-bg: #f5f6f8;
+  --auth-bg: #f4f6fb;
   --auth-card: #ffffff;
   --auth-text: #1f2933;
   --auth-muted: #6b7280;
@@ -16,7 +16,7 @@
 body {
   margin: 0;
   font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
-  background: var(--auth-bg);
+  background: radial-gradient(circle at top, #ffffff 0%, var(--auth-bg) 45%, #eef1f6 100%);
   color: var(--auth-text);
 }
 
@@ -34,7 +34,7 @@ body {
   border-radius: 20px;
   padding: 32px;
   box-shadow: var(--auth-shadow);
-  border: 1px solid var(--auth-border);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   display: grid;
   gap: 20px;
 }
@@ -95,6 +95,12 @@ body {
   filter: brightness(1.05);
 }
 
+.auth-button:focus-visible,
+.copy-button:focus-visible {
+  outline: 3px solid rgba(17, 24, 39, 0.25);
+  outline-offset: 2px;
+}
+
 .auth-hint {
   margin: 0;
   font-size: 0.85rem;
@@ -132,6 +138,7 @@ body {
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .copy-button img {
@@ -139,6 +146,10 @@ body {
   height: 18px;
 }
 
+.copy-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.12);
+}
 .copy-status {
   font-size: 0.85rem;
   color: var(--auth-muted);

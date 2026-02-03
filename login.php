@@ -59,11 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
   
+  $userId = $lineUserId;
+  $additionalStyles = ['css/auth.css?v=' . time()];
 }
 
 
-  $userId = $_SESSION['user_id'] ?? filter_input(INPUT_GET, 'id', FILTER_UNSAFE_RAW);
-  $userId = is_string($userId) ? $userId : '';
   include __DIR__ . '/header.php';
   ?>
   <div class="auth-page">
@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1 class="auth-title">ログイン</h1>
         <p class="auth-description">パスワードを入力してログインしてください。</p>
       </div>
-      <form class="auth-actions" method="post" action="">
+      <form class="auth-actions" method="post" action="" autocomplete="on">
         <label class="sr-only" for="user-id">ID</label>
         <input type="text" id="user-id" name="user_id" value="<?= htmlspecialchars($userId, ENT_QUOTES, 'UTF-8') ?>" autocomplete="username" class="sr-only">
         <div class="auth-field">

@@ -63,6 +63,7 @@ if ($issuedPassword === null) {
   $_SESSION['issued_password'] = $issuedPassword;
 }
 
+  $additionalStyles = ['css/auth.css?v=' . time()];
   include __DIR__ . '/header.php';
 ?>
 
