@@ -13,6 +13,12 @@ if (empty($_SESSION['line_user_id'])) {
   exit;
 }
 
+if (empty($_SESSION['password_verified'])) {
+  http_response_code(403);
+  echo json_encode(['success' => false, 'message' => 'パスワードの確認が必要です。'], JSON_UNESCAPED_UNICODE);
+  exit;
+}
+
 $apiKey = trim((string) filter_input(INPUT_POST, 'api_key'));
 if ($apiKey === '') {
   http_response_code(400);
