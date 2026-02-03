@@ -45,7 +45,6 @@ if (!empty($user['password'])) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['proceed'])) {
-  unset($_SESSION['issued_password']);
   header('Location: login.php');
   exit;
 }

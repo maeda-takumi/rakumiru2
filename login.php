@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $error = 'パスワードが正しくありません。';
   } else {
     session_regenerate_id(true);
+    unset($_SESSION['issued_password']);
     $_SESSION['password_authenticated'] = true;
     header('Location: index.php');
     exit;
