@@ -30,11 +30,12 @@ try {
     exit;
   }
 
-  $apiKey = fetchUserGeminiApiKey($pdo, $userId);
-  if (!$apiKey) {
+
+  $apiKey = defined('GEMINI_API_KEY') ? trim((string) GEMINI_API_KEY) : '';
+  if ($apiKey === '') {
     http_response_code(400);
     echo json_encode(
-      ['success' => false, 'message' => 'GeminiのAPIキーが未設定です。画面右上にある「APIボタン」からAPIKeyの保存をしてください'],
+      ['success' => false, 'message' => 'APIキーが未設定です。API_KEYを確認してください。'],
       JSON_UNESCAPED_UNICODE
     );
     exit;

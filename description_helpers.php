@@ -18,13 +18,13 @@ function fetchUserId(PDO $pdo, string $lineUserId): ?int {
   return $userId ? (int) $userId : null;
 }
 
-function fetchUserGeminiApiKey(PDO $pdo, int $userId): ?string {
-  $stmt = $pdo->prepare('SELECT gemini_api_key FROM users WHERE id = :id LIMIT 1');
-  $stmt->execute(['id' => $userId]);
-  $apiKey = $stmt->fetchColumn();
-  $apiKey = is_string($apiKey) ? trim($apiKey) : '';
-  return $apiKey !== '' ? $apiKey : null;
-}
+// function fetchUserGeminiApiKey(PDO $pdo, int $userId): ?string {
+//   $stmt = $pdo->prepare('SELECT gemini_api_key FROM users WHERE id = :id LIMIT 1');
+//   $stmt->execute(['id' => $userId]);
+//   $apiKey = $stmt->fetchColumn();
+//   $apiKey = is_string($apiKey) ? trim($apiKey) : '';
+//   return $apiKey !== '' ? $apiKey : null;
+// }
 function saveItemDescription(PDO $pdo, int $userId, string $itemCode, string $description): void {
   $stmt = $pdo->prepare(
     'INSERT INTO item_descriptions (user_id, item_code, description, created_at, updated_at)
