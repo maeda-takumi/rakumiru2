@@ -127,6 +127,7 @@ $hasCreatedAt = columnExists($pdo, 'users', 'created_at');
 $hasUpdatedAt = columnExists($pdo, 'users', 'updated_at');
 $hasLastLoginAt = columnExists($pdo, 'users', 'last_login_at');
 $hasLineName = columnExists($pdo, 'users', 'line_name');
+$hasImg = columnExists($pdo, 'users', 'img');
 
 $stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
 $stmt->execute(['line_user_id' => $lineUserId]);
@@ -134,6 +135,7 @@ $existing = $stmt->fetchColumn();
 
 $now = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
 $lineName = isset($lineProfile['name']) ? trim((string) $lineProfile['name']) : '';
+$lineImageUrl = isset($lineProfile['picture']) ? trim((string) $lineProfile['picture']) : '';
 
 if ($existing) {
   $fields = [];
@@ -147,6 +149,9 @@ if ($existing) {
     $fields[] = 'line_name = COALESCE(NULLIF(line_name, \'\'), :line_name)';
   }
 
+  if ($hasImg && $lineImageUrl !== '') {
+    $fields[] = 'img = COALESCE(NULLIF(img, \'\'), :img)';
+  }
   if ($fields) {
     $sql = 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = :id';
     $params = ['id' => $existing];
@@ -159,6 +164,9 @@ if ($existing) {
     if ($hasLineName && $lineName !== '') {
       $params['line_name'] = $lineName;
     }
+    if ($hasImg && $lineImageUrl !== '') {
+      $params['img'] = $lineImageUrl;
+    }
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
   }
@@ -170,6 +178,11 @@ if ($existing) {
     $columns[] = 'line_name';
     $placeholders[] = ':line_name';
     $params['line_name'] = $lineName;
+  }
+  if ($hasImg && $lineImageUrl !== '') {
+    $columns[] = 'img';
+    $placeholders[] = ':img';
+    $params['img'] = $lineImageUrl;
   }
 
   if ($hasCreatedAt) {

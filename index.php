@@ -461,7 +461,7 @@ include __DIR__ . '/header.php';
                         $description = $genre['item_descriptions'][$row['item_code']] ?? null;
                       ?>
                         <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>" data-rank-pos="<?= (int) $row['rank_pos'] ?>" data-review-count="<?= (int) ($row['review_count'] ?? 0) ?>">
-                          <div class="rank-card__rank"><span>Rank <?= (int) $row['rank_pos'] ?></span></div>
+                          <div class="rank-card__rank"><span>順位 <?= (int) $row['rank_pos'] ?></span></div>
                           <div class="rank-card__body">
                             <div class="rank-card__media">
                               <?php if (!empty($row['image_url'])): ?>
@@ -485,7 +485,7 @@ include __DIR__ . '/header.php';
                           </div>
                           <div class="rank-card__stats">
                             <div class="stats_frame">
-                              <span class="stat__label">ランク変動</span>
+                              <span class="stat__label">順位変動</span>
                               <span class="stat__value <?= strpos($rankChange, '↑') !== false ? 'stat__value--up' : (strpos($rankChange, '↓') !== false ? 'stat__value--down' : '') ?>">
                                 <?= htmlspecialchars($rankChange, ENT_QUOTES, 'UTF-8') ?>
                               </span>
@@ -506,14 +506,14 @@ include __DIR__ . '/header.php';
                               <?php if ($description): ?>
                                 <p><?= nl2br(htmlspecialchars($description, ENT_QUOTES, 'UTF-8')) ?></p>
                               <?php else: ?>
-                                <p class="rank-card__description--empty">商品説明を入力してください</p>
+                                <p class="rank-card__description--empty">投稿文を入力してください</p>
                               <?php endif; ?>
                             </div>
                             <div class="rank-card__actions">
                               <button class="rank-card__button" type="button" aria-label="AI説明を生成" data-action="ai-description">
                                 <img src="img/ai.png" alt="" />
                               </button>
-                              <button class="rank-card__button" type="button" aria-label="商品説明を入力" data-action="edit-description">
+                              <button class="rank-card__button" type="button" aria-label="投稿文を入力" data-action="edit-description">
                                 <img src="img/input.png" alt="" />
                               </button>
                               <button class="rank-card__button" type="button" aria-label="説明をコピー" data-action="copy-description">
@@ -613,10 +613,10 @@ include __DIR__ . '/header.php';
   <div class="modal__overlay" data-modal-close></div>
   <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="description-modal-title">
     <div class="modal__header">
-      <h3 id="description-modal-title">商品説明を編集</h3>
+      <h3 id="description-modal-title">投稿文を編集</h3>
       <button type="button" class="modal__close" data-modal-close aria-label="閉じる">×</button>
     </div>
-    <textarea class="modal__textarea" id="description-modal-text" rows="6" placeholder="商品説明を入力してください"></textarea>
+    <textarea class="modal__textarea" id="description-modal-text" rows="6" placeholder="投稿文を入力してください"></textarea>
     <div class="modal__actions">
       <button type="button" class="modal__button modal__button--ghost" data-modal-close>キャンセル</button>
       <button type="button" class="modal__button" id="description-modal-save">保存</button>

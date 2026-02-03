@@ -233,7 +233,7 @@
         }
         if (navigator.clipboard?.writeText) {
           navigator.clipboard.writeText(text).then(
-            () => window.alert('説明文をコピーしました。'),
+            () => window.alert('投稿文をコピーしました。'),
             () => window.alert('コピーに失敗しました。')
           );
         } else {
@@ -243,7 +243,7 @@
           textarea.select();
           try {
             document.execCommand('copy');
-            window.alert('説明文をコピーしました。');
+            window.alert('投稿文をコピーしました。');
           } catch (error) {
             window.alert('コピーに失敗しました。');
           } finally {
@@ -265,7 +265,7 @@
         actionButton.setAttribute('aria-busy', 'true');
         actionButton.disabled = true;
         if (descriptionEl) {
-          descriptionEl.innerHTML = '<p class="rank-card__description--empty">AIで説明文を生成中...</p>';
+          descriptionEl.innerHTML = '<p class="rank-card__description--empty">AIで投稿文を生成中...</p>';
         }
         fetch(`${apiBase}description_ai.php`, {
           method: 'POST',
