@@ -7,12 +7,22 @@ session_start();
 
 function renderLineOnlyMessage(): void {
   http_response_code(403);
-  echo '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>LINEログイン</title></head><body>';
+  
+  include __DIR__ . '/header.php';
   echo '<p>専用LINEからログインしてください</p>';
-  echo '</body></html>';
+  include __DIR__ . '/footer.php';
   exit;
 }
 
+function columnExists(PDO $pdo, string $table, string $column): bool {
+  $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :column');
+  $stmt->execute([
+    'schema' => DB_NAME,
+    'table' => $table,
+    'column' => $column,
+  ]);
+  return (int) $stmt->fetchColumn() > 0;
+}
 if (empty($_SESSION['line_user_id'])) {
   renderLineOnlyMessage();
 }
@@ -76,9 +86,17 @@ $dropouts = [];
 $genreData = [];
 
 if ($pdo) {
-  $stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
+  $hasActive = columnExists($pdo, 'users', 'active');
+  $selectFields = $hasActive ? 'id, active' : 'id';
+  $stmt = $pdo->prepare(sprintf('SELECT %s FROM users WHERE line_user_id = :line_user_id LIMIT 1', $selectFields));
   $stmt->execute(['line_user_id' => $_SESSION['line_user_id']]);
-  $userId = $stmt->fetchColumn();
+  $userRow = $stmt->fetch();
+  $userId = $userRow['id'] ?? null;
+  if ($userId && $hasActive && (int) $userRow['active'] !== 1) {
+    session_unset();
+    session_destroy();
+    renderLineOnlyMessage();
+  }
 
   $genres = $pdo->query("SELECT genre_id, genre_name FROM genres WHERE depth = 0 AND is_active = 1 ORDER BY genre_name")->fetchAll();
 

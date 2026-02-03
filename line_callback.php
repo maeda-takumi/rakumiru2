@@ -8,9 +8,10 @@ session_start();
 
 function renderLineOnlyMessage(): void {
   http_response_code(403);
-  echo '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>LINEログイン</title></head><body>';
-  echo '<p>専用LINEからログインしてください</p>';
-  echo '</body></html>';
+  
+  include __DIR__ . '/header.php';
+  echo '<p>ログインがブロックされました</p>';
+  include __DIR__ . '/footer.php';
   exit;
 }
 
@@ -128,10 +129,17 @@ $hasUpdatedAt = columnExists($pdo, 'users', 'updated_at');
 $hasLastLoginAt = columnExists($pdo, 'users', 'last_login_at');
 $hasLineName = columnExists($pdo, 'users', 'line_name');
 $hasImg = columnExists($pdo, 'users', 'img');
+$hasActive = columnExists($pdo, 'users', 'active');
 
-$stmt = $pdo->prepare('SELECT id FROM users WHERE line_user_id = :line_user_id LIMIT 1');
+$selectFields = $hasActive ? 'id, active' : 'id';
+$stmt = $pdo->prepare(sprintf('SELECT %s FROM users WHERE line_user_id = :line_user_id LIMIT 1', $selectFields));
 $stmt->execute(['line_user_id' => $lineUserId]);
-$existing = $stmt->fetchColumn();
+$existingRow = $stmt->fetch();
+$existing = $existingRow['id'] ?? null;
+
+if ($existing && $hasActive && (int) $existingRow['active'] !== 1) {
+  renderLineOnlyMessage();
+}
 
 $now = (new DateTimeImmutable('now'))->format('Y-m-d H:i:s');
 $lineName = isset($lineProfile['name']) ? trim((string) $lineProfile['name']) : '';
@@ -204,6 +212,14 @@ if ($existing) {
   $sql = sprintf('INSERT INTO users (%s) VALUES (%s)', implode(', ', $columns), implode(', ', $placeholders));
   $stmt = $pdo->prepare($sql);
   $stmt->execute($params);
+  if ($hasActive) {
+    $stmt = $pdo->prepare('SELECT active FROM users WHERE line_user_id = :line_user_id LIMIT 1');
+    $stmt->execute(['line_user_id' => $lineUserId]);
+    $activeValue = $stmt->fetchColumn();
+    if ($activeValue === false || (int) $activeValue !== 1) {
+      renderLineOnlyMessage();
+    }
+  }
 }
 
 session_regenerate_id(true);
