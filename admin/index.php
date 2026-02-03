@@ -38,7 +38,7 @@ if ($pdo) {
   $countStmt->execute($params);
   $totalCount = (int) $countStmt->fetchColumn();
 
-  $sql = "SELECT id, line_name, img, last_login_at, active
+  $sql = "SELECT id, line_name, img, last_login_at, active, password
           FROM users
           {$whereSql}
           ORDER BY id DESC
@@ -67,6 +67,14 @@ $formatLastLogin = static function (?string $value): string {
   } catch (Exception $e) {
     return $value;
   }
+};
+
+$formatPassword = static function (?string $value): string {
+  $trimmed = trim((string) $value);
+  if ($trimmed === '') {
+    return '未設定';
+  }
+  return $trimmed;
 };
 
 $initialFromName = static function (?string $value): string {
@@ -111,12 +119,14 @@ require_once __DIR__ . '/header.php';
         <span>画像</span>
         <span>最終ログイン</span>
         <span>Active</span>
+        <span>Password</span>
       </div>
       <?php foreach ($users as $user): ?>
         <?php
           $lineName = $user['line_name'] ?? '';
           $imgUrl = $user['img'] ?? '';
           $active = (int) ($user['active'] ?? 0) === 1;
+          $password = $user['password'] ?? '';
         ?>
         <div class="admin-table__row" data-user-row>
           <div class="admin-table__cell admin-table__cell--name">
@@ -145,6 +155,9 @@ require_once __DIR__ . '/header.php';
               <span class="toggle__slider" aria-hidden="true"></span>
             </label>
             <span class="admin-toggle-status" data-toggle-status></span>
+          </div>
+          <div class="admin-table__cell">
+            <span class="admin-password"><?= htmlspecialchars($formatPassword($password), ENT_QUOTES, 'UTF-8') ?></span>
           </div>
         </div>
       <?php endforeach; ?>
