@@ -20,6 +20,47 @@ body {
   color: var(--text);
 }
 
+.login-issue {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7f7 100%);
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+}
+
+.login-issue__container {
+  width: min(520px, 100%);
+}
+
+.login-issue__card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 28px;
+  text-align: center;
+  box-shadow: var(--shadow-float);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.login-issue__logo {
+  width: min(200px, 70%);
+  height: auto;
+  display: block;
+}
+
+.login-issue__title {
+  font-size: 1.3rem;
+  margin: 4px 0 0;
+  color: #1f2937;
+}
+
+.login-issue__text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
 .brand__link { display: inline-flex; align-items: center; }
 .brand__logo { height: 55px; width: auto; display: block; }
 
@@ -599,6 +640,10 @@ h2 {
     overflow: auto;
 }
 
+.modal__panel--password {
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfb 100%);
+}
 .modal__panel--settings {
   gap: 16px;
 }

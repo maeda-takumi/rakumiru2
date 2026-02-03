@@ -63,13 +63,8 @@ if ($issuedPassword === null) {
   $_SESSION['issued_password'] = $issuedPassword;
 }
 
-?><!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>パスワード発行</title>
-</head>
-<body>
+  include __DIR__ . '/header.php';
+?>
   <h1>ログインパスワード発行</h1>
   <p>以下のパスワードをメモしてください。パスワードはこの画面でのみ確認できます。</p>
   <p style="font-size: 20px; font-weight: bold;">
@@ -78,5 +73,6 @@ if ($issuedPassword === null) {
   <form method="post" action="">
     <button type="submit" name="proceed" value="1">ログイン画面へ進む</button>
   </form>
-</body>
-</html>
+<?php
+include __DIR__ . '/footer.php';
+?>

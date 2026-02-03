@@ -7,9 +7,16 @@ session_start();
 
 function renderLineOnlyMessage(): void {
   http_response_code(403);
+  $styleUrl = 'css/style.css?v=' . time();
   
   include __DIR__ . '/header.php';
-  echo '<p>専用LINEからログインしてください</p>';
+  echo '<title>LINEログイン</title><link rel="stylesheet" href="' . htmlspecialchars($styleUrl, ENT_QUOTES, 'UTF-8') . '"></head>';
+  echo '<body class="login-issue">';
+  echo '<div class="login-issue__container">';
+  echo '<div class="login-issue__card">';
+  echo '<img src="img/logo.png" alt="RAKUMiRU" class="login-issue__logo">';
+  echo '<h1 class="login-issue__title">LINEログイン専用</h1>';
+  echo '<p class="login-issue__text">専用LINEからログインしてください</p>';
   include __DIR__ . '/footer.php';
   exit;
 }

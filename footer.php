@@ -12,11 +12,12 @@
   </button>
   <div class="modal" id="api-key-modal" aria-hidden="true">
     <div class="modal__overlay" data-api-key-close></div>
-    <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="api-key-modal-title">
+    <div class="modal__panel modal__panel--password" role="dialog" aria-modal="true" aria-labelledby="api-key-modal-title">
       <div class="modal__header">
         <h3 id="api-key-modal-title">Gemini APIキー</h3>
         <button type="button" class="modal__close" data-api-key-close aria-label="閉じる">×</button>
       </div>
+      <input type="hidden" id="api-key-user-id" value="<?= htmlspecialchars((string) ($userId ?? ''), ENT_QUOTES, 'UTF-8') ?>">
       <label class="modal__field">
         <span>APIキー</span>
         <input type="password" id="api-key-input" placeholder="Gemini APIキーを入力" autocomplete="off">

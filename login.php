@@ -60,13 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 }
 
-?><!DOCTYPE html>
-<html lang="ja">
-<head>
-  <meta charset="UTF-8">
-  <title>ログイン</title>
-</head>
-<body>
+  include __DIR__ . '/header.php';
+  ?>
   <h1>ログイン</h1>
   <?php if ($error): ?>
     <p style="color: red;"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
@@ -78,5 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <input type="password" id="password" name="password" autocomplete="current-password" required>
     <button type="submit">ログイン</button>
   </form>
-</body>
-</html>
+<?php
+include __DIR__ . '/footer.php';
+?>
