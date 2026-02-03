@@ -51,7 +51,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['proceed'])) {
 
 $issuedPassword = $_SESSION['issued_password'] ?? null;
 
-if ($issuedPassword === null) {
+if ($issuedPassword !== null) {
+  $hash = password_hash($issuedPassword, PASSWORD_DEFAULT);
+  $update = $pdo->prepare('UPDATE users SET password = :password WHERE id = :id');
+  $update->execute([
+    'password' => $hash,
+    'id' => $user['id'],
+  ]);
+} else {
   $issuedPassword = rtrim(strtr(base64_encode(random_bytes(9)), '+/', '-_'), '=');
   $hash = password_hash($issuedPassword, PASSWORD_DEFAULT);
   $update = $pdo->prepare('UPDATE users SET password = :password WHERE id = :id');
