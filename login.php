@@ -58,21 +58,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     header('Location: index.php');
     exit;
   }
+  
 }
 
+
+  $userId = $_SESSION['user_id'] ?? filter_input(INPUT_GET, 'id', FILTER_UNSAFE_RAW);
+  $userId = is_string($userId) ? $userId : '';
   include __DIR__ . '/header.php';
   ?>
-  <h1>ログイン</h1>
-  <?php if ($error): ?>
-    <p style="color: red;"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></p>
-  <?php endif; ?>
-  <form method="post" action="">
-    <label for="line_user_id">LINE ID</label><br>
-    <input type="text" id="line_user_id" name="line_user_id" value="<?php echo htmlspecialchars($lineUserId, ENT_QUOTES, 'UTF-8'); ?>" readonly autocomplete="username"><br>
-    <label for="password">パスワード</label><br>
-    <input type="password" id="password" name="password" autocomplete="current-password" required>
-    <button type="submit">ログイン</button>
-  </form>
+  <div class="auth-page">
+    <main class="auth-card">
+      <div>
+        <h1 class="auth-title">ログイン</h1>
+        <p class="auth-description">パスワードを入力してログインしてください。</p>
+      </div>
+      <form class="auth-actions" method="post" action="">
+        <label class="sr-only" for="user-id">ID</label>
+        <input type="text" id="user-id" name="user_id" value="<?= htmlspecialchars($userId, ENT_QUOTES, 'UTF-8') ?>" autocomplete="username" class="sr-only">
+        <div class="auth-field">
+          <label for="password">パスワード</label>
+          <input type="password" id="password" name="password" autocomplete="current-password" required>
+        </div>
+        <button class="auth-button" type="submit">ログインする</button>
+      </form>
+      <p class="auth-hint">この端末にパスワードを保存できます。</p>
+    </main>
+  </div>
 <?php
 include __DIR__ . '/footer.php';
 ?>

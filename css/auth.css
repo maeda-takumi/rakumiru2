@@ -1,0 +1,157 @@
+:root {
+  color-scheme: light;
+  --auth-bg: #f5f6f8;
+  --auth-card: #ffffff;
+  --auth-text: #1f2933;
+  --auth-muted: #6b7280;
+  --auth-border: rgba(15, 23, 42, 0.12);
+  --auth-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
+  --auth-accent: #111827;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Helvetica Neue", Arial, sans-serif;
+  background: var(--auth-bg);
+  color: var(--auth-text);
+}
+
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  background: var(--auth-card);
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: var(--auth-shadow);
+  border: 1px solid var(--auth-border);
+  display: grid;
+  gap: 20px;
+}
+
+.auth-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+.auth-description {
+  margin: 0;
+  color: var(--auth-muted);
+  font-size: 0.95rem;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+}
+
+.auth-field label {
+  font-size: 0.9rem;
+  color: var(--auth-muted);
+}
+
+.auth-field input {
+  border-radius: 12px;
+  border: 1px solid var(--auth-border);
+  padding: 12px 14px;
+  font-size: 1rem;
+  outline: none;
+}
+
+.auth-field input:focus {
+  border-color: rgba(17, 24, 39, 0.4);
+  box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.08);
+}
+
+.auth-actions {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-button {
+  border: none;
+  border-radius: 999px;
+  background: var(--auth-accent);
+  color: #fff;
+  font-weight: 600;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.auth-button:hover {
+  filter: brightness(1.05);
+}
+
+.auth-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--auth-muted);
+  text-align: center;
+}
+
+.password-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8fafc;
+  border-radius: 14px;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.password-display input {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--auth-text);
+  width: 100%;
+  outline: none;
+}
+
+.copy-button {
+  border: 1px solid var(--auth-border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.copy-button img {
+  width: 18px;
+  height: 18px;
+}
+
+.copy-status {
+  font-size: 0.85rem;
+  color: var(--auth-muted);
+  min-height: 1.2em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}

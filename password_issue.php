@@ -65,14 +65,47 @@ if ($issuedPassword === null) {
 
   include __DIR__ . '/header.php';
 ?>
-  <h1>ログインパスワード発行</h1>
-  <p>以下のパスワードをメモしてください。パスワードはこの画面でのみ確認できます。</p>
-  <p style="font-size: 20px; font-weight: bold;">
-    <?php echo htmlspecialchars($issuedPassword, ENT_QUOTES, 'UTF-8'); ?>
-  </p>
-  <form method="post" action="">
-    <button type="submit" name="proceed" value="1">ログイン画面へ進む</button>
-  </form>
+
+  <div class="auth-page">
+    <main class="auth-card">
+      <div>
+        <h1 class="auth-title">パスワードを発行しました</h1>
+        <p class="auth-description">下記のパスワードをコピーして保管してください。</p>
+      </div>
+      <div class="password-display">
+        <input type="text" id="issued-password" value="<?= htmlspecialchars($issuedPassword, ENT_QUOTES, 'UTF-8') ?>" readonly>
+        <button class="copy-button" type="button" id="copy-button" aria-label="パスワードをコピー">
+          <img src="img/copy.png" alt="コピー">
+        </button>
+      </div>
+      <p class="copy-status" id="copy-status" aria-live="polite"></p>
+      <p class="auth-hint">コピー後にパスワードを保存してください。</p>
+    </main>
+  </div>
+<script>
+  const copyButton = document.getElementById('copy-button');
+  const passwordField = document.getElementById('issued-password');
+  const status = document.getElementById('copy-status');
+
+  copyButton.addEventListener('click', async () => {
+    const password = passwordField.value;
+    if (!password) {
+      status.textContent = 'コピーするパスワードがありません。';
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(password);
+      status.textContent = 'クリップボードにコピーしました。';
+    } catch (error) {
+      passwordField.select();
+      passwordField.setSelectionRange(0, password.length);
+      const copied = document.execCommand('copy');
+      status.textContent = copied ? 'クリップボードにコピーしました。' : 'コピーに失敗しました。';
+      passwordField.setSelectionRange(0, 0);
+    }
+  });
+</script>
 <?php
 include __DIR__ . '/footer.php';
 ?>
