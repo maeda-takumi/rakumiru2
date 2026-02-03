@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/password_crypto.php';
 configureSessionCookie();
 
 session_start();
@@ -69,27 +70,24 @@ $passwordParams = [
 
 
 if ($issuedPassword !== null) {
-  $hash = password_hash($issuedPassword, PASSWORD_DEFAULT);
-  $passwordParams['password'] = $hash;
-  if ($hasPlainPassword) {
-    $passwordParams['password_plain'] = $issuedPassword;
-  }
+  $encrypted = encryptPassword($issuedPassword);
+  $passwordParams['password'] = $encrypted;
 } else {
   $issuedPassword = rtrim(strtr(base64_encode(random_bytes(9)), '+/', '-_'), '=');
-  $hash = password_hash($issuedPassword, PASSWORD_DEFAULT);
-  $passwordParams['password'] = $hash;
-  if ($hasPlainPassword) {
-    $passwordParams['password_plain'] = $issuedPassword;
-  }
+  $encrypted = encryptPassword($issuedPassword);
+  $passwordParams['password'] = $encrypted;
   $_SESSION['issued_password'] = $issuedPassword;
 }
 
 $update = $pdo->prepare("UPDATE users SET {$passwordFields} WHERE id = :id");
-$update->execute(array_filter([
+$updateParams = [
   'password' => $passwordParams['password'],
-  'password_plain' => $passwordParams['password_plain'],
   'id' => $user['id'],
-], static fn($value) => $value !== null));
+];
+if ($hasPlainPassword) {
+  $updateParams['password_plain'] = null;
+}
+$update->execute($updateParams);
   $additionalStyles = ['css/auth.css?v=' . time()];
   include __DIR__ . '/header.php';
 ?>

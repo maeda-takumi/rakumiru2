@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../password_crypto.php';
 configureSessionCookie();
 
 $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);
@@ -48,6 +49,7 @@ if ($pdo) {
   $countStmt = $pdo->prepare("SELECT COUNT(*) FROM users {$whereSql}");
   $countStmt->execute($params);
   $totalCount = (int) $countStmt->fetchColumn();
+  $passwordSelect = $hasPlainPassword ? 'password, password_plain' : 'password';
 
   $passwordSelect = $hasPlainPassword ? 'password_plain' : 'password';
   $sql = "SELECT id, line_name, img, last_login_at, active, {$passwordSelect}
@@ -80,13 +82,17 @@ $formatLastLogin = static function (?string $value): string {
     return $value;
   }
 };
-
-$formatPassword = static function (?string $value) use ($hasPlainPassword): string {
+$formatPassword = static function (?string $value, ?string $encryptedValue) use ($hasPlainPassword): string {
   $trimmed = trim((string) $value);
-  if ($trimmed === '') {
-    return $hasPlainPassword ? '未設定' : '復元不可';
+
+  if ($trimmed !== '') {
+    return $trimmed;
   }
-  return $trimmed;
+  $decrypted = decryptPassword($encryptedValue);
+  if ($decrypted !== null && $decrypted !== '') {
+    return $decrypted;
+  }
+  return $hasPlainPassword ? '未設定' : '復元不可';
 };
 $initialFromName = static function (?string $value): string {
   $trimmed = trim((string) $value);
@@ -138,6 +144,7 @@ require_once __DIR__ . '/header.php';
           $imgUrl = $user['img'] ?? '';
           $active = (int) ($user['active'] ?? 0) === 1;
           $password = $hasPlainPassword ? ($user['password_plain'] ?? '') : '';
+          $encryptedPassword = $user['password'] ?? null;
         ?>
         <div class="admin-table__row" data-user-row>
           <div class="admin-table__cell admin-table__cell--name">
@@ -168,7 +175,7 @@ require_once __DIR__ . '/header.php';
             <span class="admin-toggle-status" data-toggle-status></span>
           </div>
           <div class="admin-table__cell">
-            <span class="admin-password"><?= htmlspecialchars($formatPassword($password), ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="admin-password"><?= htmlspecialchars($formatPassword($password, is_string($encryptedPassword) ? $encryptedPassword : null), ENT_QUOTES, 'UTF-8') ?></span>
           </div>
         </div>
       <?php endforeach; ?>
