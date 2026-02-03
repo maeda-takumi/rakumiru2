@@ -80,7 +80,6 @@ if ($issuedPassword === null) {
         </button>
       </div>
       <p class="copy-status" id="copy-status" aria-live="polite"></p>
-      <p class="auth-hint">コピー後にパスワードを保存してください。</p>
     </main>
   </div>
 <script>
