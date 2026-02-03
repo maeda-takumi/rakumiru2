@@ -249,9 +249,10 @@ if ($pdo) {
 
       if ($previousDate && $previousCapturedAt) {
         $stmt = $pdo->prepare(
-          "SELECT item_code, rank_pos, price, review_count
-           FROM rank_daily
-           WHERE genre_id = :genre AND captured_date = :prev AND captured_at = :prev_at"
+          "SELECT rd.item_code, rd.rank_pos, rd.price, rd.review_count, i.item_name
+           FROM rank_daily rd
+           JOIN items i ON rd.item_code = i.item_code
+           WHERE rd.genre_id = :genre AND rd.captured_date = :prev AND rd.captured_at = :prev_at"
         );
         $stmt->execute(['genre' => $genreId, 'prev' => $previousDate, 'prev_at' => $previousCapturedAt]);
         foreach ($stmt->fetchAll() as $row) {
@@ -423,7 +424,7 @@ include __DIR__ . '/header.php';
             <label class="genre-sort__field">
               <div class="sort_label">基準</div>
               <select name="sort_key" data-sort-key>
-                <option value="rank">ランキング順</option>
+                <option value="rank">順位順</option>
                 <option value="reviews">レビュー数順</option>
               </select>
             </label>
@@ -461,7 +462,7 @@ include __DIR__ . '/header.php';
                         $description = $genre['item_descriptions'][$row['item_code']] ?? null;
                       ?>
                         <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>" data-rank-pos="<?= (int) $row['rank_pos'] ?>" data-review-count="<?= (int) ($row['review_count'] ?? 0) ?>">
-                          <div class="rank-card__rank"><span>順位 <?= (int) $row['rank_pos'] ?></span></div>
+                          <div class="rank-card__rank"><span>楽天市場 <?= (int) $row['rank_pos'] ?>位</span></div>
                           <div class="rank-card__body">
                             <div class="rank-card__media">
                               <?php if (!empty($row['image_url'])): ?>
@@ -531,7 +532,7 @@ include __DIR__ . '/header.php';
                       <h3>ランク外になった商品</h3>
                       <ul>
                         <?php foreach ($genre['dropouts'] as $drop): ?>
-                          <li>前日 #<?= (int) $drop['rank_pos'] ?> / <?= htmlspecialchars($drop['item_code'], ENT_QUOTES, 'UTF-8') ?></li>
+                          <li>前日 #<?= (int) $drop['rank_pos'] ?> / <?= htmlspecialchars($drop['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?></li>
                         <?php endforeach; ?>
                       </ul>
                     </div>

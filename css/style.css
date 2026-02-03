@@ -26,7 +26,7 @@ body {
 .container {
   width: min(960px, 100%);
   margin: 0 auto;
-  margin-top: 20px;
+  margin-top: 30px;
   padding: 0 18px;
 }
 
@@ -102,7 +102,7 @@ main {
   background: var(--panel);
   /* border: 1px solid rgba(15, 23, 42, 0.05); */
   border-radius: 16px;
-  padding: 20px 0px ;
+  padding: 0px ;
   margin-bottom: 20px;
   /* box-shadow: var(--shadow-soft); */
 }
@@ -283,7 +283,7 @@ h2 {
     font-weight: 700;
     line-height: 1.2;
     box-shadow: 0 6px 12px rgba(229, 57, 53, 0.25);
-    width: 105px;
+    width: 150px;
 }
 
 .rank-card__rank span {
@@ -514,11 +514,17 @@ h2 {
   font-size: 0.85rem;
 }
 
+/* .dropout li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+} */
 .app-footer {
   border-top: 1px solid rgba(15, 23, 42, 0.06);
   padding: 20px 0 28px;
   color: var(--muted);
   font-size: 0.85rem;
+    text-align: center;
 }
 
 .scroll-top-button {
@@ -727,7 +733,7 @@ h2 {
 .genre-slider {
   display: grid;
   gap: 10px;
-  margin-top: 16px;
+  margin-top: 20px;
 }
 
 .genre-slider__controls {
