@@ -25,6 +25,17 @@ $offset = ($page - 1) * $perPage;
 
 $users = [];
 $totalCount = 0;
+$hasPlainPassword = false;
+
+if ($pdo) {
+  $columnStmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :column');
+  $columnStmt->execute([
+    'schema' => DB_NAME,
+    'table' => 'users',
+    'column' => 'password_plain',
+  ]);
+  $hasPlainPassword = (int) $columnStmt->fetchColumn() > 0;
+}
 
 if ($pdo) {
   $whereSql = '';
@@ -38,7 +49,8 @@ if ($pdo) {
   $countStmt->execute($params);
   $totalCount = (int) $countStmt->fetchColumn();
 
-  $sql = "SELECT id, line_name, img, last_login_at, active, password
+  $passwordSelect = $hasPlainPassword ? 'password_plain' : 'password';
+  $sql = "SELECT id, line_name, img, last_login_at, active, {$passwordSelect}
           FROM users
           {$whereSql}
           ORDER BY id DESC
@@ -69,14 +81,13 @@ $formatLastLogin = static function (?string $value): string {
   }
 };
 
-$formatPassword = static function (?string $value): string {
+$formatPassword = static function (?string $value) use ($hasPlainPassword): string {
   $trimmed = trim((string) $value);
   if ($trimmed === '') {
-    return '未設定';
+    return $hasPlainPassword ? '未設定' : '復元不可';
   }
   return $trimmed;
 };
-
 $initialFromName = static function (?string $value): string {
   $trimmed = trim((string) $value);
   if ($trimmed === '') {
@@ -126,7 +137,7 @@ require_once __DIR__ . '/header.php';
           $lineName = $user['line_name'] ?? '';
           $imgUrl = $user['img'] ?? '';
           $active = (int) ($user['active'] ?? 0) === 1;
-          $password = $user['password'] ?? '';
+          $password = $hasPlainPassword ? ($user['password_plain'] ?? '') : '';
         ?>
         <div class="admin-table__row" data-user-row>
           <div class="admin-table__cell admin-table__cell--name">

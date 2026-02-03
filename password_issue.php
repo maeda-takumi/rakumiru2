@@ -29,6 +29,16 @@ try {
 } catch (PDOException $e) {
   renderLineOnlyMessage();
 }
+function columnExists(PDO $pdo, string $table, string $column): bool {
+  $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = :schema AND table_name = :table AND column_name = :column');
+  $stmt->execute([
+    'schema' => DB_NAME,
+    'table' => $table,
+    'column' => $column,
+  ]);
+  return (int) $stmt->fetchColumn() > 0;
+}
+
 
 $lineUserId = (string) $_SESSION['line_user_id'];
 $stmt = $pdo->prepare('SELECT id, password FROM users WHERE line_user_id = :line_user_id LIMIT 1');
@@ -50,25 +60,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['proceed'])) {
 }
 
 $issuedPassword = $_SESSION['issued_password'] ?? null;
+$hasPlainPassword = columnExists($pdo, 'users', 'password_plain');
+$passwordFields = $hasPlainPassword ? 'password = :password, password_plain = :password_plain' : 'password = :password';
+$passwordParams = [
+  'password' => null,
+  'password_plain' => null,
+];
+
 
 if ($issuedPassword !== null) {
   $hash = password_hash($issuedPassword, PASSWORD_DEFAULT);
-  $update = $pdo->prepare('UPDATE users SET password = :password WHERE id = :id');
-  $update->execute([
-    'password' => $hash,
-    'id' => $user['id'],
-  ]);
+  $passwordParams['password'] = $hash;
+  if ($hasPlainPassword) {
+    $passwordParams['password_plain'] = $issuedPassword;
+  }
 } else {
   $issuedPassword = rtrim(strtr(base64_encode(random_bytes(9)), '+/', '-_'), '=');
   $hash = password_hash($issuedPassword, PASSWORD_DEFAULT);
-  $update = $pdo->prepare('UPDATE users SET password = :password WHERE id = :id');
-  $update->execute([
-    'password' => $hash,
-    'id' => $user['id'],
-  ]);
+  $passwordParams['password'] = $hash;
+  if ($hasPlainPassword) {
+    $passwordParams['password_plain'] = $issuedPassword;
+  }
   $_SESSION['issued_password'] = $issuedPassword;
 }
 
+$update = $pdo->prepare("UPDATE users SET {$passwordFields} WHERE id = :id");
+$update->execute(array_filter([
+  'password' => $passwordParams['password'],
+  'password_plain' => $passwordParams['password_plain'],
+  'id' => $user['id'],
+], static fn($value) => $value !== null));
   $additionalStyles = ['css/auth.css?v=' . time()];
   include __DIR__ . '/header.php';
 ?>
