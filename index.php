@@ -24,7 +24,13 @@ function columnExists(PDO $pdo, string $table, string $column): bool {
   return (int) $stmt->fetchColumn() > 0;
 }
 if (empty($_SESSION['line_user_id'])) {
-  renderLineOnlyMessage();
+  header('Location: line_login.php');
+  exit;
+}
+
+if (empty($_SESSION['password_authenticated'])) {
+  header('Location: login.php');
+  exit;
 }
 
 $dsn = sprintf('mysql:host=%s;dbname=%s;charset=%s', DB_HOST, DB_NAME, DB_CHARSET);

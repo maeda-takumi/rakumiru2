@@ -129,13 +129,21 @@ $hasUpdatedAt = columnExists($pdo, 'users', 'updated_at');
 $hasLastLoginAt = columnExists($pdo, 'users', 'last_login_at');
 $hasLineName = columnExists($pdo, 'users', 'line_name');
 $hasImg = columnExists($pdo, 'users', 'img');
+$hasPassword = columnExists($pdo, 'users', 'password');
 $hasActive = columnExists($pdo, 'users', 'active');
 
-$selectFields = $hasActive ? 'id, active' : 'id';
-$stmt = $pdo->prepare(sprintf('SELECT %s FROM users WHERE line_user_id = :line_user_id LIMIT 1', $selectFields));
+$selectFields = ['id'];
+if ($hasPassword) {
+  $selectFields[] = 'password';
+}
+if ($hasActive) {
+  $selectFields[] = 'active';
+}
+$stmt = $pdo->prepare(sprintf('SELECT %s FROM users WHERE line_user_id = :line_user_id LIMIT 1', implode(', ', $selectFields)));
 $stmt->execute(['line_user_id' => $lineUserId]);
 $existingRow = $stmt->fetch();
 $existing = $existingRow['id'] ?? null;
+$existingPassword = $existingRow['password'] ?? null;
 
 if ($existing && $hasActive && (int) $existingRow['active'] !== 1) {
   renderLineOnlyMessage();
@@ -224,6 +232,14 @@ if ($existing) {
 
 session_regenerate_id(true);
 $_SESSION['line_user_id'] = $lineUserId;
+unset($_SESSION['password_authenticated']);
 
-header('Location: index.php');
+$needsPassword = $hasPassword && (empty($existingPassword));
+
+if (!$existing || $needsPassword) {
+  header('Location: password_issue.php');
+  exit;
+}
+
+header('Location: login.php');
 exit;
