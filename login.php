@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/password_crypto.php';
 configureSessionCookie();
 
 session_start();
@@ -53,16 +54,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $password = (string) filter_input(INPUT_POST, 'password');
   if ($password === '') {
     $error = 'パスワードを入力してください。';
-  } elseif (!password_verify($password, (string) $user['password'])) {
-    $error = 'パスワードが正しくありません。';
   } else {
-    session_regenerate_id(true);
-    unset($_SESSION['issued_password']);
-    $_SESSION['password_authenticated'] = true;
-    header('Location: index.php');
-    exit;
+    $storedPassword = decryptPassword((string) $user['password']);
+    if ($storedPassword === null || !hash_equals($storedPassword, $password)) {
+      $error = 'パスワードが正しくありません。';
+    } else {
+      session_regenerate_id(true);
+      unset($_SESSION['issued_password']);
+      $_SESSION['password_authenticated'] = true;
+      header('Location: index.php');
+      exit;
+    }
   }
-  
 }
 
 
