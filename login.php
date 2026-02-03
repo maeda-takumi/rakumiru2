@@ -76,6 +76,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <div>
         <h1 class="auth-title">ログイン</h1>
         <p class="auth-description">パスワードを入力してログインしてください。</p>
+        <?php if (!empty($error)): ?>
+          <p class="auth-error" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
+        <?php endif; ?>
       </div>
       <form class="auth-actions" method="post" action="" autocomplete="on">
         <label class="sr-only" for="user-id">ID</label>

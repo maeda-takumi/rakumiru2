@@ -16,8 +16,9 @@ function renderLineOnlyMessage(): void {
   include __DIR__ . '/header.php';
   echo '<div class="login-issue__container">';
   echo '<div class="login-issue__card">';
-  echo '<h1 class="login-issue__title">LINEログイン専用</h1>';
-  echo '<p class="login-issue__text">専用LINEからログインしてください</p>';
+  
+  echo '<img src="img/logo.png" alt="RAKUMiRU" class="login-issue__logo">';
+  echo '<p class="login-issue__text">ログインがブロックされました</p>';
   include __DIR__ . '/footer.php';
   exit;
 }
