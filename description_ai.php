@@ -77,9 +77,9 @@ try {
   if (!empty($item['review_count'])) {
     $infoLines[] = 'レビュー数: ' . number_format((int) $item['review_count']);
   }
-  if (!empty($item['point_rate'])) {
-    $infoLines[] = 'ポイント倍率: ' . (int) $item['point_rate'] . '%';
-  }
+  // if (!empty($item['point_rate'])) {
+  //   $infoLines[] = 'ポイント倍率: ' . (int) $item['point_rate'] . '%';
+  // }
   if (!empty($item['sale_start_at']) && !empty($item['sale_end_at'])) {
     $infoLines[] = 'セール期間: ' . $item['sale_start_at'] . ' 〜 ' . $item['sale_end_at'];
   }
@@ -87,13 +87,34 @@ try {
     $infoLines[] = '取得日: ' . $item['captured_date'];
   }
 
-  $prompt = "あなたはEC向けの商品コピーライターです。以下の商品情報を元に、楽天ROOM投稿用の商品説明文を作成してください。\n"
-    . "条件:\n"
-    . "- 日本語で120〜200文字程度\n"
-    . "- 数値情報（価格・レビュー数・ポイント倍率など）を自然に含める\n"
-    . "- 誇張表現は避け、具体的で読みやすい文章にする\n"
-    . "- 出力は本文のみで、箇条書きや見出しは使わない\n\n"
-    . implode("\n", $infoLines);
+$prompt =
+  "あなたは「楽天ROOM」で商品を販売するプロです。\n"
+  . "以下の商品情報をもとに、楽天ROOM投稿用の“紹介文”を1つ生成してください。\n"
+  . "\n"
+  . "【必須ルール】\n"
+  . "- 出力するのは生成した紹介文のみ（前置き・解説・注意書きは一切不要）\n"
+  . "- 日本語で120〜200文字程度\n"
+  . "- 商品の特徴を簡潔にまとめ、魅力が伝わるように訴求する\n"
+  . "- 閲覧者の購買意欲を掻き立てる文言を自然に入れる\n"
+  . "- ハッシュタグ（#）を文末に2〜6個入れる（検索されやすい一般語中心）\n"
+  . "- 数値情報（価格・レビュー数・ポイント倍率・ランキング等）があれば“生の数字は出さず”自然に言い換えて織り込む\n"
+  . "- 価格/ランキング/レビュー数/ポイント倍率/日付など、入力に含まれる具体的な数値は本文にそのまま書かない（例外なし）\n"
+  . "- 数値の言い換えルール：\n"
+  . "  ・ランキング: 1〜3位=最上位、4〜10位=上位、11〜30位=上位入り、31位以下=注目\n"
+  . "  ・レビュー数: 〜999=レビューあり、1000〜4999=レビュー多数、5000〜9999=高レビュー、10000〜29999=約1〜3万件、30000〜=約3万件以上\n"
+  . "  ・価格: 具体的金額は出さず「お手頃/手に取りやすい/しっかり価格/ご褒美価格」などの表現にする\n"
+  . "  ・ポイント倍率: 具体的%は出さず「ポイント還元あり/還元アップのタイミング」などの表現にする\n"
+  . "  ・セール期間/取得日: 具体的な日付は出さず「セール中/期間限定/今のうち」などの表現にする\n"
+  . "- 誇張表現や断定しすぎ（最強/絶対/必ず等）は避け、具体的で読みやすい文章にする\n"
+  . "- 箇条書き、見出し、記号の羅列は使わない（1〜2文の自然な文章）\n"
+  . "- 入力情報に“説明文”は無いので、下の項目（商品名・ショップ名・ランキング・価格・レビュー数・ポイント倍率・セール期間・取得日）から訴求点を組み立てる\n"
+  . "- 同じ言い回し・構成・切り口にならないように毎回表現を変える（テンプレ感を出さない）\n"
+  . "- 日本語のみで出力する（英語・韓国語・中国語など他言語は禁止）\n"
+  . "- 入力情報にない事実（受賞歴/No.1/大賞/公式評価/効果の断定など）は書かない\n"
+  . "\n"
+  . "【商品情報】\n"
+  . implode("\n", $infoLines);
+
 
   $payload = [
     'contents' => [
@@ -109,8 +130,12 @@ try {
     ],
   ];
 
-  $model = 'models/gemini-2.5-flash-lite';
+  // $model = 'models/gemini-2.5-flash-lite';
+  // $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode($apiKey);
+
+  $model = 'models/gemma-3-4b-it';
   $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode($apiKey);
+
   $ch = curl_init($apiUrl);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_POST, true);

@@ -395,42 +395,46 @@ include __DIR__ . '/header.php';
 
 
 <section class="panel">
-  <div class="panel__header">
-    <h2>差分ランキング</h2>
-    <button class="settings-button" type="button" id="settings-open" aria-haspopup="dialog" aria-controls="settings-modal">
-      <img src="img/option.png" alt="" />
-      <span>設定</span>
-    </button>
+  <div class="inner__frame">
+    <div class="panel__header">
+      <h2>差分ランキング</h2>
+      <button class="settings-button" type="button" id="settings-open" aria-haspopup="dialog" aria-controls="settings-modal">
+        <img src="img/option.png" alt="" />
+        <span>設定</span>
+      </button>
+    </div>
   </div>
   <?php if (!$selectedGenreIds): ?>
     <p class="notice">設定からジャンルを選ぶとランキング差分が表示されます。</p>
   <?php else: ?>
     <div class="genre-slider" data-genre-slider data-genre-count="<?= count($genreData) ?>">
-      <div class="genre-slider__controls">
-        <button class="genre-slider__button" type="button" data-genre-prev aria-label="前のジャンル">‹</button>
-        <div class="genre-slider__status">
-          <span class="genre-slider__label" data-genre-label><?= htmlspecialchars($genreData[0]['genre_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
-          <span class="genre-slider__count" data-genre-count-label></span>
+      <div class="inner__frame">
+        <div class="genre-slider__controls">
+          <button class="genre-slider__button" type="button" data-genre-prev aria-label="前のジャンル">‹</button>
+          <div class="genre-slider__status">
+            <span class="genre-slider__label" data-genre-label><?= htmlspecialchars($genreData[0]['genre_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></span>
+            <span class="genre-slider__count" data-genre-count-label></span>
+          </div>
+          <button class="genre-slider__button" type="button" data-genre-next aria-label="次のジャンル">›</button>
         </div>
-        <button class="genre-slider__button" type="button" data-genre-next aria-label="次のジャンル">›</button>
-      </div>
-      <div class="genre-sort" data-genre-sort>
-        <span class="genre-sort__label">表示順</span>
-        <div class="sort_frame">
-          <label class="genre-sort__field">
-            <div class="sort_label">基準</div>
-            <select name="sort_key" data-sort-key>
-              <option value="rank">ランキング順</option>
-              <option value="reviews">レビュー数順</option>
-            </select>
-          </label>
-          <label class="genre-sort__field">
-            <div class="sort_label">並び</div>
-            <select name="sort_order" data-sort-order>
-              <option value="asc">昇順</option>
-              <option value="desc">降順</option>
-            </select>
-          </label>
+        <div class="genre-sort" data-genre-sort>
+          <span class="genre-sort__label">表示順</span>
+          <div class="sort_frame">
+            <label class="genre-sort__field">
+              <div class="sort_label">基準</div>
+              <select name="sort_key" data-sort-key>
+                <option value="rank">ランキング順</option>
+                <option value="reviews">レビュー数順</option>
+              </select>
+            </label>
+            <label class="genre-sort__field">
+              <div class="sort_label">並び</div>
+              <select name="sort_order" data-sort-order>
+                <option value="asc">昇順</option>
+                <option value="desc">降順</option>
+              </select>
+            </label>
+          </div>
         </div>
       </div>
       <div class="genre-slider__viewport">
@@ -457,7 +461,7 @@ include __DIR__ . '/header.php';
                         $description = $genre['item_descriptions'][$row['item_code']] ?? null;
                       ?>
                         <article class="rank-card" data-item-code="<?= htmlspecialchars($row['item_code'], ENT_QUOTES, 'UTF-8') ?>" data-rank-pos="<?= (int) $row['rank_pos'] ?>" data-review-count="<?= (int) ($row['review_count'] ?? 0) ?>">
-                          <div class="rank-card__rank"><span><?= (int) $row['rank_pos'] ?></span></div>
+                          <div class="rank-card__rank"><span>Rank <?= (int) $row['rank_pos'] ?></span></div>
                           <div class="rank-card__body">
                             <div class="rank-card__media">
                               <?php if (!empty($row['image_url'])): ?>
@@ -480,18 +484,18 @@ include __DIR__ . '/header.php';
                             </div>
                           </div>
                           <div class="rank-card__stats">
-                            <div>
+                            <div class="stats_frame">
                               <span class="stat__label">ランク変動</span>
                               <span class="stat__value <?= strpos($rankChange, '↑') !== false ? 'stat__value--up' : (strpos($rankChange, '↓') !== false ? 'stat__value--down' : '') ?>">
                                 <?= htmlspecialchars($rankChange, ENT_QUOTES, 'UTF-8') ?>
                               </span>
                             </div>
-                            <div>
+                            <div class="stats_frame">
                               <span class="stat__label">価格</span>
                               <span class="stat__value">¥<?= number_format((int) ($row['price'] ?? 0)) ?></span>
                               <span class="stat__diff"><?= htmlspecialchars($priceDiff, ENT_QUOTES, 'UTF-8') ?></span>
                             </div>
-                            <div>
+                            <div class="stats_frame">
                               <span class="stat__label">レビュー</span>
                               <span class="stat__value"><?= number_format((int) ($row['review_count'] ?? 0)) ?></span>
                               <span class="stat__diff"><?= htmlspecialchars($reviewDiff, ENT_QUOTES, 'UTF-8') ?></span>
