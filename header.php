@@ -1,5 +1,5 @@
 <?php
-$showAuthenticatedActions = !empty($_SESSION['line_user_id']) && !empty($_SESSION['password_verified']);
+$showAuthenticatedActions = !empty($_SESSION['line_user_id']) && !empty($_SESSION['password_authenticated']);
 ?>
 <!DOCTYPE html>
 <html lang="ja">

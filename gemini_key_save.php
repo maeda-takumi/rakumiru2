@@ -13,7 +13,8 @@ if (empty($_SESSION['line_user_id'])) {
   exit;
 }
 
-if (empty($_SESSION['password_verified'])) {
+
+if (empty($_SESSION['password_authenticated'])) {
   http_response_code(403);
   echo json_encode(['success' => false, 'message' => 'パスワードの確認が必要です。'], JSON_UNESCAPED_UNICODE);
   exit;

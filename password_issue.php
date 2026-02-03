@@ -80,6 +80,9 @@ if ($issuedPassword === null) {
         </button>
       </div>
       <p class="copy-status" id="copy-status" aria-live="polite"></p>
+      <form class="auth-actions" method="post">
+        <button class="auth-button" type="submit" name="proceed" value="1">ログイン画面へ進む</button>
+      </form>
     </main>
   </div>
 <script>

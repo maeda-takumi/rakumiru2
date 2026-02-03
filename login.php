@@ -46,6 +46,9 @@ if (empty($user['password'])) {
   exit;
 }
 
+$userId = $lineUserId;
+$additionalStyles = ['css/auth.css?v=' . time()];
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $password = (string) filter_input(INPUT_POST, 'password');
   if ($password === '') {
@@ -59,8 +62,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
   
-  $userId = $lineUserId;
-  $additionalStyles = ['css/auth.css?v=' . time()];
 }
 
 
