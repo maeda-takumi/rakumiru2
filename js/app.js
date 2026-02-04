@@ -18,7 +18,15 @@
   const priceFilterNote = settingsModal?.querySelector('[data-price-filter-note]');
   const genreSlider = document.querySelector('[data-genre-slider]');
   const apiBase = document.body?.dataset.apiBase || '/';
+  const tutorialOverlay = document.getElementById('tutorial-overlay');
+  const tutorialHighlight = tutorialOverlay?.querySelector('[data-tutorial-highlight]');
+  const tutorialStepLabel = tutorialOverlay?.querySelector('[data-tutorial-step]');
+  const tutorialText = tutorialOverlay?.querySelector('[data-tutorial-text]');
+  const tutorialNext = tutorialOverlay?.querySelector('[data-tutorial-next]');
+  const tutorialSkip = tutorialOverlay?.querySelector('[data-tutorial-skip]');
   let activeCard = null;
+  let activeTutorialIndex = 0;
+  let activeTutorialSteps = [];
 
 
 
@@ -59,6 +67,17 @@
     apiKeyInput.value = '';
   };
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const tutorialStorageKey = 'rakumiruTutorialSeen';
+  const canUseStorage = (() => {
+    try {
+      const testKey = '__rakumiru_tutorial__';
+      localStorage.setItem(testKey, '1');
+      localStorage.removeItem(testKey);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  })();
   const updateScrollTopButton = () => {
     if (!scrollTopButton) return;
     scrollTopButton.classList.toggle('is-visible', window.scrollY > 200);
@@ -107,9 +126,141 @@
     });
   };
 
+  const buildTutorialSteps = () => [
+    {
+      selector: '#settings-open',
+      text: '⚙設定ボタンからジャンルや絞り込み条件を変更できます。',
+    },
+    {
+      selector: '[genre-slider__controls]',
+      text: 'ジャンルスライダーで表示するジャンルを切り替えられます。',
+    },
+    {
+      selector: '.rank-card__title',
+      text: '商品名をタップすると商品ページが開きます。',
+    },
+    {
+      selector: '[data-action="ai-description"]',
+      text: 'AIボタンでAIの投稿文を自動生成します。',
+    },
+    {
+      selector: '[data-action="edit-description"]',
+      text: '編集ボタンで投稿文を入力・編集します。',
+    },
+    {
+      selector: '[data-action="copy-description"]',
+      text: 'コピーボタンで投稿文をコピーできます。',
+    },
+  ];
+
+  const resolveTutorialSteps = () =>
+    buildTutorialSteps()
+      .map((step) => {
+        const element = document.querySelector(step.selector);
+        if (!element) return null;
+        return { ...step, element };
+      })
+      .filter(Boolean);
+
+  const updateTutorialPosition = (element) => {
+    if (!tutorialHighlight || !tutorialOverlay) return;
+    const padding = 8;
+    const rect = element.getBoundingClientRect();
+    tutorialHighlight.style.width = `${rect.width + padding * 2}px`;
+    tutorialHighlight.style.height = `${rect.height + padding * 2}px`;
+    tutorialHighlight.style.left = `${Math.max(rect.left - padding, 8)}px`;
+    tutorialHighlight.style.top = `${Math.max(rect.top - padding, 8)}px`;
+  };
+
+  const updateTutorialCardPosition = (element) => {
+    if (!tutorialOverlay) return;
+    const card = tutorialOverlay.querySelector('.tutorial-card');
+    if (!card) return;
+    const rect = element.getBoundingClientRect();
+    const maxWidth = Math.min(320, window.innerWidth - 32);
+    card.style.maxWidth = `${maxWidth}px`;
+    card.style.width = `${maxWidth}px`;
+    const cardRect = card.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const preferredTop =
+      spaceBelow > cardRect.height + 24
+        ? rect.bottom + 16
+        : rect.top - cardRect.height - 16;
+    const top = Math.min(
+      Math.max(preferredTop, 16),
+      window.innerHeight - cardRect.height - 16
+    );
+    const left = Math.min(
+      Math.max(rect.left, 16),
+      window.innerWidth - cardRect.width - 16
+    );
+    card.style.top = `${top}px`;
+    card.style.left = `${left}px`;
+  };
+
+  const showTutorialStep = (index) => {
+    if (!tutorialOverlay || !tutorialStepLabel || !tutorialText || !tutorialNext) return;
+    const step = activeTutorialSteps[index];
+    if (!step) return;
+    activeTutorialIndex = index;
+    const behavior = prefersReducedMotion.matches ? 'auto' : 'smooth';
+    step.element.scrollIntoView({ behavior, block: 'center' });
+    tutorialStepLabel.textContent = `ステップ ${index + 1} / ${activeTutorialSteps.length}`;
+    tutorialText.textContent = step.text;
+    tutorialNext.textContent =
+      index === activeTutorialSteps.length - 1 ? '終了' : 'OK';
+    tutorialOverlay.classList.add('is-active');
+    tutorialOverlay.setAttribute('aria-hidden', 'false');
+    window.setTimeout(() => {
+      updateTutorialPosition(step.element);
+      updateTutorialCardPosition(step.element);
+    }, 200);
+  };
+
+  const endTutorial = () => {
+    if (!tutorialOverlay) return;
+    tutorialOverlay.classList.remove('is-active');
+    tutorialOverlay.setAttribute('aria-hidden', 'true');
+    if (canUseStorage) {
+      localStorage.setItem(tutorialStorageKey, '1');
+    }
+  };
+
+  const startTutorial = () => {
+    if (!tutorialOverlay) return;
+    activeTutorialSteps = resolveTutorialSteps();
+    if (activeTutorialSteps.length === 0) return;
+    showTutorialStep(0);
+  };
   priceFilterToggle?.addEventListener('change', syncPriceFilterFields);
   syncPriceFilterFields();
   updateScrollTopButton();
+  tutorialNext?.addEventListener('click', () => {
+    if (activeTutorialIndex >= activeTutorialSteps.length - 1) {
+      endTutorial();
+      return;
+    }
+    showTutorialStep(activeTutorialIndex + 1);
+  });
+  tutorialSkip?.addEventListener('click', endTutorial);
+  window.addEventListener('resize', () => {
+    if (!tutorialOverlay?.classList.contains('is-active')) return;
+    const step = activeTutorialSteps[activeTutorialIndex];
+    if (step) {
+      updateTutorialPosition(step.element);
+      updateTutorialCardPosition(step.element);
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape') return;
+    if (tutorialOverlay?.classList.contains('is-active')) {
+      endTutorial();
+    }
+  });
+
+  if (!canUseStorage || localStorage.getItem(tutorialStorageKey) !== '1') {
+    startTutorial();
+  }
 
   if (genreSlider) {
     const track = genreSlider.querySelector('[data-genre-track]');

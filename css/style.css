@@ -30,7 +30,7 @@ body {
 
 .login-issue__container {
   width: min(520px, 100%);
-  margin: 20px auto 150px auto
+  margin: 20px auto 150px 
 }
 
 .login-issue__card {

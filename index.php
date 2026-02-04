@@ -575,6 +575,17 @@ include __DIR__ . '/header.php';
     </div>
   <?php endif; ?>
 </section>
+<div class="tutorial-overlay" id="tutorial-overlay" aria-hidden="true">
+  <div class="tutorial-highlight" data-tutorial-highlight></div>
+  <div class="tutorial-card" role="dialog" aria-live="polite" aria-label="操作チュートリアル">
+    <p class="tutorial-step" data-tutorial-step></p>
+    <p class="tutorial-text" data-tutorial-text></p>
+    <div class="tutorial-actions">
+      <button class="tutorial-button tutorial-button--ghost" type="button" data-tutorial-skip>スキップ</button>
+      <button class="tutorial-button" type="button" data-tutorial-next>OK</button>
+    </div>
+  </div>
+</div>
 <div class="modal" id="settings-modal" aria-hidden="true">
   <div class="modal__overlay" data-settings-close></div>
   <div class="modal__panel modal__panel--settings" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
