@@ -205,6 +205,15 @@ try {
       (captured_date, captured_at, genre_id, rank_pos, item_code, price, review_count, point_rate, sale_start_at, sale_end_at)
     VALUES
       (:captured_date, :captured_at, :genre_id, :rank_pos, :item_code, :price, :review_count, :point_rate, :sale_start_at, :sale_end_at)
+    ON DUPLICATE KEY UPDATE
+      captured_at=VALUES(captured_at),
+      genre_id=VALUES(genre_id),
+      rank_pos=VALUES(rank_pos),
+      price=VALUES(price),
+      review_count=VALUES(review_count),
+      point_rate=VALUES(point_rate),
+      sale_start_at=VALUES(sale_start_at),
+      sale_end_at=VALUES(sale_end_at)
   ");
 
   $updateCursor = $pdo->prepare("
