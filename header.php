@@ -33,12 +33,11 @@ $basePath = $basePath === '' ? '/' : $basePath . '/';
           <img src="img/logo.png" alt="RAKUMiRU" class="brand__logo">
         </a>
       </div>
-<!-- 
+
         <div class="app-header__actions">
-          <button class="header-icon-button" type="button" id="api-key-open" aria-haspopup="dialog" aria-controls="api-key-modal">
-            <img src="img/api.png" alt="Gemini APIキー設定" />
-          </button>
-        </div> -->
+          
+          <button class="header-icon-button" type="button" id="tutorial-start">チュートリアル</button>
+        </div>
       </div>
       <!-- <p class="brand__subtitle">ランキング変動をスマホで見やすく</p> -->
     </div>

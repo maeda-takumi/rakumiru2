@@ -24,6 +24,7 @@
   const tutorialText = tutorialOverlay?.querySelector('[data-tutorial-text]');
   const tutorialNext = tutorialOverlay?.querySelector('[data-tutorial-next]');
   const tutorialSkip = tutorialOverlay?.querySelector('[data-tutorial-skip]');
+  const tutorialStart = document.getElementById('tutorial-start');
   let activeCard = null;
   let activeTutorialIndex = 0;
   let activeTutorialSteps = [];
@@ -132,7 +133,7 @@
       text: '⚙設定ボタンからジャンルや絞り込み条件を変更できます。',
     },
     {
-      selector: '[genre-slider__controls]',
+      selector: '.genre-slider__controls',
       text: 'ジャンルスライダーで表示するジャンルを切り替えられます。',
     },
     {
@@ -243,6 +244,12 @@
     showTutorialStep(activeTutorialIndex + 1);
   });
   tutorialSkip?.addEventListener('click', endTutorial);
+  tutorialStart?.addEventListener('click', () => {
+    if (tutorialOverlay?.classList.contains('is-active')) {
+      endTutorial();
+    }
+    startTutorial();
+  });
   window.addEventListener('resize', () => {
     if (!tutorialOverlay?.classList.contains('is-active')) return;
     const step = activeTutorialSteps[activeTutorialIndex];
