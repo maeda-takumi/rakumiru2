@@ -7,6 +7,11 @@ $showAuthenticatedActions = !empty($_SESSION['line_user_id']) && !empty($_SESSIO
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>RAKUMiRU</title>
+
+  <!-- Tab icon (favicon) -->
+  <!-- <link rel="icon" href="img/icon4.png" type="image/png">
+  <link rel="apple-touch-icon" href="img/icon4.png"> -->
+
   <!-- <link rel="stylesheet" href="css/style.css"> -->
   <link rel="stylesheet" href="css/style.css?v=<?= time() ?>">
   <?php if (!empty($additionalStyles) && is_array($additionalStyles)): ?>

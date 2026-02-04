@@ -26,7 +26,7 @@ $config = [
     'applicationId' => '1025854062340321330',
     'endpoint'      => 'https://app.rakuten.co.jp/services/api/IchibaItem/Ranking/20170628',
     'hits'          => 30,
-    'period'        => null, // daily => null（realtimeなら 'realtime'）
+    'period'        => 'realtime', // daily => null（realtimeなら 'realtime'）
   ],
   'job' => [
     'name'            => 'rakuten_rank_daily',
@@ -257,6 +257,13 @@ try {
 
     try {
     $json = httpGetJson($url, $config['http']);
+
+    // ここから追加
+    $genreName = (string)($json['genreName'] ?? '');
+    $lastBuild = (string)($json['lastBuildDate'] ?? '');
+    logln("ジャンルID：{$genreId} / ジャンル名：{$genreName} / lastBuildDate：{$lastBuild}");
+    // 追加ここまで
+
     } catch (HttpStatusException $he) {
 
     // 400/404 はそのジャンルを無効化してスキップ
@@ -291,17 +298,33 @@ try {
     $pdo->beginTransaction();
 
     $rankPos = 0;
+    // ここから追加（集計用）
+    $storedCount = 0;      // rank_daily に実際にINSERTした件数
+    $seenCount = 0;        // itemCode が取れた件数（保存対象候補）
+    $ranks = [];           // 保存した rank の一覧（欠けチェック用）
+    // 追加ここまで
+
     foreach ($json['Items'] as $row) {
-      // Normalize item payload
-      // Some APIs return { "Item": { ... } } per element
       $item = $row['Item'] ?? $row;
       if (!is_array($item)) continue;
 
-      $rankPos++;
-      if ($rankPos > $hits) break;
+      // APIが返す順位（欠番対応）
+      $apiRank = isset($item['rank']) ? (int)$item['rank'] : null;
+
+      // 保険：rankが無い/壊れてる時だけ連番を使う
+      if ($apiRank === null || $apiRank <= 0) {
+        $rankPos++;
+        $apiRank = $rankPos;
+      }
+
+      // hits=30なら「rankが30以内だけ保存」
+      if ($apiRank > $hits) continue;
 
       $itemCode = (string)($item['itemCode'] ?? '');
       if ($itemCode === '') continue;
+
+      $seenCount++;
+
 
       $itemName = (string)($item['itemName'] ?? '');
       $itemUrl  = (string)($item['itemUrl'] ?? '');
@@ -352,7 +375,7 @@ try {
         ':captured_date' => $today,
         ':captured_at'   => $nowDt,
         ':genre_id'      => $genreId,
-        ':rank_pos'      => $rankPos,
+        ':rank_pos'      => $apiRank,   // ★ここがポイント
         ':item_code'     => $itemCode,
         ':price'         => $price,
         ':review_count'  => $reviewCount,
@@ -360,7 +383,24 @@ try {
         ':sale_start_at' => $saleStartAt,
         ':sale_end_at'   => $saleEndAt,
       ]);
+
+      $storedCount++;
+      $ranks[] = $apiRank;
     }
+    // ここから追加（結果ログ）
+    sort($ranks);
+    $uniqRanks = array_values(array_unique($ranks));
+
+    $missing = [];
+    for ($i = 1; $i <= $hits; $i++) {
+      if (!in_array($i, $uniqRanks, true)) $missing[] = $i;
+    }
+
+    $minRank = $uniqRanks[0] ?? null;
+    $maxRank = $uniqRanks ? $uniqRanks[count($uniqRanks)-1] : null;
+
+    logln("取得件数：{$storedCount}件（候補：{$seenCount}件） / rank範囲：{$minRank}〜{$maxRank} / 欠け：" . (empty($missing) ? 'なし' : json_encode($missing)));
+    // 追加ここまで
 
     $pdo->commit();
 
