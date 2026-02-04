@@ -1,5 +1,6 @@
 <?php
 $showAuthenticatedActions = !empty($_SESSION['line_user_id']) && !empty($_SESSION['password_authenticated']);
+$showTutorialButton = basename($_SERVER['SCRIPT_NAME']) === 'index.php';
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -35,8 +36,9 @@ $basePath = $basePath === '' ? '/' : $basePath . '/';
       </div>
 
         <div class="app-header__actions">
-          
-          <button class="header-icon-button" type="button" id="tutorial-start">チュートリアル</button>
+          <?php if ($showTutorialButton): ?>
+            <button class="header-icon-button" type="button" id="tutorial-start">チュートリアル</button>
+          <?php endif; ?>
         </div>
       </div>
       <!-- <p class="brand__subtitle">ランキング変動をスマホで見やすく</p> -->

@@ -1286,11 +1286,11 @@ h2 {
 }
 
 .tutorial-overlay {
-  position: fixed;
-  inset: 0;
-  display: none;
-  background: rgba(10, 14, 20, 0.6);
-  z-index: 1200;
+    position: fixed;
+    inset: 0;
+    display: none;
+    background: rgba(10, 14, 20, 0.0);
+    z-index: 1200;
 }
 
 .tutorial-overlay.is-active {
@@ -1298,12 +1298,12 @@ h2 {
 }
 
 .tutorial-highlight {
-  position: absolute;
-  border: 2px solid #fff;
-  border-radius: 999px;
-  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.25);
-  pointer-events: none;
-  transition: all 0.2s ease;
+    position: absolute;
+    border: 2px solid #b7b7b7;
+    border-radius: 999px;
+    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.05);
+    pointer-events: none;
+    transition: all 0.2s ease;
 }
 
 .tutorial-card {

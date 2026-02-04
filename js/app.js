@@ -199,6 +199,22 @@
     card.style.left = `${left}px`;
   };
 
+  const repositionActiveTutorial = () => {
+    if (!tutorialOverlay?.classList.contains('is-active')) return;
+    const step = activeTutorialSteps[activeTutorialIndex];
+    if (!step) return;
+    updateTutorialPosition(step.element);
+    updateTutorialCardPosition(step.element);
+  };
+
+  let tutorialRepositionRaf = null;
+  const scheduleTutorialReposition = () => {
+    if (tutorialRepositionRaf) return;
+    tutorialRepositionRaf = window.requestAnimationFrame(() => {
+      tutorialRepositionRaf = null;
+      repositionActiveTutorial();
+    });
+  };
   const showTutorialStep = (index) => {
     if (!tutorialOverlay || !tutorialStepLabel || !tutorialText || !tutorialNext) return;
     const step = activeTutorialSteps[index];
@@ -250,14 +266,10 @@
     }
     startTutorial();
   });
-  window.addEventListener('resize', () => {
-    if (!tutorialOverlay?.classList.contains('is-active')) return;
-    const step = activeTutorialSteps[activeTutorialIndex];
-    if (step) {
-      updateTutorialPosition(step.element);
-      updateTutorialCardPosition(step.element);
-    }
-  });
+  window.addEventListener('resize', scheduleTutorialReposition);
+  document.addEventListener('scroll', scheduleTutorialReposition, true);
+  window.visualViewport?.addEventListener('resize', scheduleTutorialReposition);
+  window.visualViewport?.addEventListener('scroll', scheduleTutorialReposition);
   document.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
     if (tutorialOverlay?.classList.contains('is-active')) {
