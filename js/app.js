@@ -28,6 +28,7 @@
   let activeCard = null;
   let activeTutorialIndex = 0;
   let activeTutorialSteps = [];
+  let activeGenreSlide = null;
 
 
 
@@ -131,37 +132,53 @@
     {
       selector: '#settings-open',
       text: '⚙設定ボタンからジャンルや絞り込み条件を変更できます。',
+      scope: 'document',
     },
     {
       selector: '.genre-slider__controls',
       text: 'ジャンルスライダーで表示するジャンルを切り替えられます。',
+      scope: 'document',
     },
     {
       selector: '.rank-card__title',
       text: '商品名をクリックすると楽天Roomの投稿ページが開きます。',
+      scope: 'active',
     },
     {
       selector: '[data-action="ai-description"]',
       text: 'AIボタンでAIが投稿文を自動生成します。',
+      scope: 'active',
     },
     {
       selector: '[data-action="edit-description"]',
       text: '編集ボタンで投稿文を入力・編集します。',
+      scope: 'active',
     },
     {
       selector: '[data-action="copy-description"]',
       text: 'コピーボタンで投稿文をコピーできます。',
+      scope: 'active',
     },
   ];
 
-  const resolveTutorialSteps = () =>
-    buildTutorialSteps()
+  const resolveTutorialSteps = () => {
+    const activeSlide =
+      activeGenreSlide ?? genreSlider?.querySelector('[data-genre-slide].is-active');
+    return buildTutorialSteps()
       .map((step) => {
-        const element = document.querySelector(step.selector);
+        const root =
+          step.scope === 'active' && activeSlide instanceof Element ? activeSlide : document;
+        const element = root.querySelector(step.selector);
+        if (!element && step.scope === 'active') {
+          const fallback = document.querySelector(step.selector);
+          if (!fallback) return null;
+          return { ...step, element: fallback };
+        }
         if (!element) return null;
         return { ...step, element };
       })
       .filter(Boolean);
+  };
 
   const updateTutorialPosition = (element) => {
     if (!tutorialHighlight || !tutorialOverlay) return;
@@ -277,10 +294,6 @@
     }
   });
 
-  if (!canUseStorage || localStorage.getItem(tutorialStorageKey) !== '1') {
-    startTutorial();
-  }
-
   if (genreSlider) {
     const track = genreSlider.querySelector('[data-genre-track]');
     const slides = Array.from(genreSlider.querySelectorAll('[data-genre-slide]'));
@@ -328,6 +341,7 @@
       if (!track || slides.length === 0) return;
       track.style.transform = `translateX(${-currentIndex * 100}%)`;
       const currentSlide = slides[currentIndex];
+      activeGenreSlide = currentSlide ?? null;
       if (label && currentSlide) {
         label.textContent = currentSlide.dataset.genreName ?? '';
       }
@@ -344,12 +358,23 @@
         dot.classList.toggle('is-active', index === currentIndex);
         dot.setAttribute('aria-selected', index === currentIndex ? 'true' : 'false');
       });
+      slides.forEach((slide, index) => {
+        const isActive = index === currentIndex;
+        slide.classList.toggle('is-active', isActive);
+        slide.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+      });
     };
 
     const goToIndex = (index) => {
       if (index < 0 || index >= slides.length) return;
       currentIndex = index;
       updateSlider();
+      if (tutorialOverlay?.classList.contains('is-active')) {
+        activeTutorialSteps = resolveTutorialSteps();
+        if (activeTutorialSteps.length === 0) return;
+        const nextIndex = Math.min(activeTutorialIndex, activeTutorialSteps.length - 1);
+        showTutorialStep(nextIndex);
+      }
     };
 
     prevButton?.addEventListener('click', () => {
@@ -381,6 +406,9 @@
 
     sortKeySelect?.addEventListener('change', sortRankCards);
     sortOrderSelect?.addEventListener('change', sortRankCards);
+  }
+  if (!canUseStorage || localStorage.getItem(tutorialStorageKey) !== '1') {
+    startTutorial();
   }
   document.addEventListener('click', (event) => {
     const target = event.target;
