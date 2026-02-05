@@ -138,11 +138,11 @@
     },
     {
       selector: '.rank-card__title',
-      text: '商品名をタップすると商品ページが開きます。',
+      text: '商品名をクリックすると楽天Roomの投稿ページが開きます。',
     },
     {
       selector: '[data-action="ai-description"]',
-      text: 'AIボタンでAIの投稿文を自動生成します。',
+      text: 'AIボタンでAIが投稿文を自動生成します。',
     },
     {
       selector: '[data-action="edit-description"]',

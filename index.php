@@ -501,7 +501,7 @@ include __DIR__ . '/header.php';
                               <?php endif; ?>
                             </div>
                             <div class="rank-card__info">
-                              <a class="rank-card__title" href="<?= htmlspecialchars($row['item_url'] ?? '#', ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" title="<?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>">
+                              <a class="rank-card__title" href="<?= htmlspecialchars(sprintf('https://room.rakuten.co.jp/mix?itemcode=%s&scid=we_room_upc60', $row['item_code']), ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener" title="<?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>">
                                 <?= htmlspecialchars($row['item_name'] ?? '商品名未登録', ENT_QUOTES, 'UTF-8') ?>
                               </a>
                               <p class="rank-card__shop"><?= htmlspecialchars($row['shop_name'] ?? '', ENT_QUOTES, 'UTF-8') ?></p>

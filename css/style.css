@@ -1299,9 +1299,9 @@ h2 {
 
 .tutorial-highlight {
     position: absolute;
-    border: 2px solid #b7b7b7;
+    border: 2px solid #dd8181;
     border-radius: 999px;
-    box-shadow: 0 0 0 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0 0 6px rgb(255 0 0 / 15%);
     pointer-events: none;
     transition: all 0.2s ease;
 }
@@ -1313,7 +1313,7 @@ h2 {
   color: #1b1b1b;
   border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 16px 32px rgb(255 0 0 / 25%);
 }
 
 .tutorial-step {
@@ -1338,7 +1338,7 @@ h2 {
   border: none;
   border-radius: 999px;
   padding: 8px 16px;
-  background: #111827;
+  background: var(--accent);
   color: #fff;
   font-size: 0.9rem;
   cursor: pointer;
