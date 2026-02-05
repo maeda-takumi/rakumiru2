@@ -10,8 +10,8 @@ $showTutorialButton = basename($_SERVER['SCRIPT_NAME']) === 'index.php';
   <title>RAKUMiRU</title>
 
   <!-- Tab icon (favicon) -->
-  <!-- <link rel="icon" href="img/icon4.png" type="image/png">
-  <link rel="apple-touch-icon" href="img/icon4.png"> -->
+  <link rel="icon" href="img/tab_icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="img/tab_icon.png">
 
   <!-- <link rel="stylesheet" href="css/style.css"> -->
   <link rel="stylesheet" href="css/auth.css?v=<?= time() ?>">

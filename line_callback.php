@@ -170,11 +170,11 @@ if ($existing) {
     $fields[] = 'last_login_at = :last_login_at';
   }
   if ($hasLineName && $lineName !== '') {
-    $fields[] = 'line_name = COALESCE(NULLIF(line_name, \'\'), :line_name)';
+    $fields[] = 'line_name = :line_name';
   }
 
   if ($hasImg && $lineImageUrl !== '') {
-    $fields[] = 'img = COALESCE(NULLIF(img, \'\'), :img)';
+    $fields[] = 'img = :img';
   }
   if ($fields) {
     $sql = 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = :id';

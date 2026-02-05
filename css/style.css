@@ -118,14 +118,14 @@ body {
   justify-content: center;
   gap: 5px;
   cursor: pointer;
-  box-shadow: var(--shadow-soft);
+  /* box-shadow: var(--shadow-soft); */
 }
 
 .header-menu-button span {
   width: 18px;
   height: 2px;
   border-radius: 99px;
-  background: #0f172a;
+  background: var(--accent);
   display: block;
 }
 
@@ -155,7 +155,7 @@ body {
   background: #fff;
   transform: translateX(100%);
   transition: transform 0.25s ease;
-  box-shadow: -12px 0 24px rgba(15, 23, 42, 0.16);
+  /* box-shadow: -12px 0 24px rgba(15, 23, 42, 0.16); */
   padding: 18px 14px;
   display: grid;
   grid-template-rows: auto 1fr;
