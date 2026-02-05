@@ -74,6 +74,7 @@
 
   const openTermsModal = (target) => {
     if (!termsModal || termsModalContents.length === 0) return;
+    closeDrawer();
     termsModalContents.forEach((section) => {
       section.hidden = section.dataset.modalContent !== target;
     });
