@@ -57,6 +57,9 @@
   };
   const openDrawer = () => {
     if (!globalDrawer || !menuToggle) return;
+    if (document.activeElement instanceof HTMLElement && globalDrawer.contains(document.activeElement)) {
+      menuToggle.focus();
+    }
     globalDrawer.classList.add('is-open');
     globalDrawer.setAttribute('aria-hidden', 'false');
     menuToggle.setAttribute('aria-expanded', 'true');
@@ -76,6 +79,10 @@
     });
     termsModal.classList.add('is-open');
     termsModal.setAttribute('aria-hidden', 'false');
+    const closeButton = termsModal.querySelector('[data-terms-modal-close]');
+    if (closeButton instanceof HTMLElement) {
+      closeButton.focus();
+    }
   };
 
   const closeTermsModal = () => {
