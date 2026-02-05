@@ -545,7 +545,7 @@ h2 {
   border-radius: 12px;
   background: #fff;
   border: 1px dashed rgba(15, 23, 42, 0.08);
-  box-shadow: var(--shadow-soft);
+  /* box-shadow: var(--shadow-soft); */
   overflow-wrap: anywhere;
   word-break: break-word;
 }

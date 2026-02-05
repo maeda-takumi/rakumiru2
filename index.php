@@ -243,24 +243,13 @@ if ($pdo) {
       $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
       $latestCapturedAt = $stmt->fetchColumn();
       if ($latestCapturedAt) {
-        $stmt = $pdo->prepare(
-          "SELECT MAX(captured_at) AS prev_at
-           FROM rank_daily
-           WHERE genre_id = :genre AND captured_date = :latest AND captured_at < :latest_at"
-        );
-        $stmt->execute(['genre' => $genreId, 'latest' => $latestDate, 'latest_at' => $latestCapturedAt]);
-        $previousCapturedAt = $stmt->fetchColumn();
-        if ($previousCapturedAt) {
-          $previousDate = $latestDate;
-        } else {
-          $stmt = $pdo->prepare("SELECT MAX(captured_date) AS prev_date FROM rank_daily WHERE genre_id = :genre AND captured_date < :latest");
-          $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
-          $previousDate = $stmt->fetchColumn();
-          if ($previousDate) {
-            $stmt = $pdo->prepare("SELECT MAX(captured_at) AS prev_at FROM rank_daily WHERE genre_id = :genre AND captured_date = :prev");
-            $stmt->execute(['genre' => $genreId, 'prev' => $previousDate]);
-            $previousCapturedAt = $stmt->fetchColumn();
-          }
+        $stmt = $pdo->prepare("SELECT MAX(captured_date) AS prev_date FROM rank_daily WHERE genre_id = :genre AND captured_date < :latest");
+        $stmt->execute(['genre' => $genreId, 'latest' => $latestDate]);
+        $previousDate = $stmt->fetchColumn();
+        if ($previousDate) {
+          $stmt = $pdo->prepare("SELECT MAX(captured_at) AS prev_at FROM rank_daily WHERE genre_id = :genre AND captured_date = :prev");
+          $stmt->execute(['genre' => $genreId, 'prev' => $previousDate]);
+          $previousCapturedAt = $stmt->fetchColumn();
         }
       }
 
