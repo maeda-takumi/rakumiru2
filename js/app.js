@@ -321,6 +321,7 @@
   });
   tutorialSkip?.addEventListener('click', endTutorial);
   tutorialStart?.addEventListener('click', () => {
+    closeDrawer();
     if (tutorialOverlay?.classList.contains('is-active')) {
       endTutorial();
     }
