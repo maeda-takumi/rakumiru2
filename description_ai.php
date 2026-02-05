@@ -28,6 +28,9 @@ if (!$itemCode) {
 try {
   $pdo = createPdo();
   $userId = fetchUserId($pdo, $_SESSION['line_user_id']);
+  $cooldownSeconds = defined('AI_DESCRIPTION_COOLDOWN_SECONDS')
+    ? max(0, (int) AI_DESCRIPTION_COOLDOWN_SECONDS)
+    : 30;
 
   if (!$userId) {
     http_response_code(403);
@@ -35,6 +38,25 @@ try {
     exit;
   }
 
+  $cooldownMap = $_SESSION['description_ai_last_request_at'] ?? [];
+  if (!is_array($cooldownMap)) {
+    $cooldownMap = [];
+  }
+  $lastRequestAt = isset($cooldownMap[$userId]) ? (int) $cooldownMap[$userId] : 0;
+  $elapsed = time() - $lastRequestAt;
+  if ($cooldownSeconds > 0 && $lastRequestAt > 0 && $elapsed < $cooldownSeconds) {
+    $remainingSeconds = $cooldownSeconds - $elapsed;
+    http_response_code(429);
+    echo json_encode(
+      [
+        'success' => false,
+        'message' => "クールダウン中です。あと{$remainingSeconds}秒で再生成できます。",
+        'remaining_seconds' => $remainingSeconds,
+      ],
+      JSON_UNESCAPED_UNICODE
+    );
+    exit;
+  }
 
   $apiKey = defined('GEMINI_API_KEY') ? trim((string) GEMINI_API_KEY) : '';
   if ($apiKey === '') {
@@ -141,6 +163,9 @@ $prompt =
 
   $model = 'models/gemma-3-4b-it';
   $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode($apiKey);
+
+  $cooldownMap[$userId] = time();
+  $_SESSION['description_ai_last_request_at'] = $cooldownMap;
 
   $ch = curl_init($apiUrl);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
