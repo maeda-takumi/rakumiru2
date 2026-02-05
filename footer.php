@@ -29,6 +29,7 @@
       <p class="modal__status" id="api-key-status" aria-live="polite"></p>
     </div>
   </div>
+  <?php include __DIR__ . '/partials/terms_modal.php'; ?>
   <script src="js/app.js?v=<?= time() ?>"></script>
 </body>
 </html>

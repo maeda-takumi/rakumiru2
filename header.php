@@ -37,11 +37,39 @@ $basePath = $basePath === '' ? '/' : $basePath . '/';
 
         <div class="app-header__actions">
           <?php if ($showTutorialButton): ?>
-            <button class="header-icon-button" type="button" id="tutorial-start">チュートリアル</button>
+            <!-- <button class="header-icon-button" type="button" id="tutorial-start">チュートリアル</button> -->
           <?php endif; ?>
+          <button
+            class="header-menu-button"
+            type="button"
+            id="menu-toggle"
+            aria-label="メニューを開く"
+            aria-controls="global-drawer"
+            aria-expanded="false"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
         </div>
       </div>
       <!-- <p class="brand__subtitle">ランキング変動をスマホで見やすく</p> -->
     </div>
   </header>
+  <div class="global-drawer" id="global-drawer" aria-hidden="true">
+    <button class="global-drawer__backdrop" type="button" data-drawer-close aria-label="メニューを閉じる"></button>
+    <aside class="global-drawer__panel" role="dialog" aria-modal="true" aria-label="メニュー">
+      <div class="global-drawer__header">
+        <p class="global-drawer__title">メニュー</p>
+        <button class="global-drawer__close" type="button" data-drawer-close aria-label="閉じる">×</button>
+      </div>
+      <div class="global-drawer__list">
+        <?php if ($showTutorialButton): ?>
+          <button class="header-icon-button global-drawer__item" type="button" id="tutorial-start">チュートリアル</button>
+          <button class="global-drawer__item" type="button" data-modal-target="terms">利用規約</button>
+          <button class="global-drawer__item" type="button" data-modal-target="privacy">プライバシーポリシー</button>
+        <?php endif; ?>
+      </div>
+    </aside>
+  </div>
   <main class="container">

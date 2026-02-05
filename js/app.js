@@ -25,6 +25,10 @@
   const tutorialNext = tutorialOverlay?.querySelector('[data-tutorial-next]');
   const tutorialSkip = tutorialOverlay?.querySelector('[data-tutorial-skip]');
   const tutorialStart = document.getElementById('tutorial-start');
+  const menuToggle = document.getElementById('menu-toggle');
+  const globalDrawer = document.getElementById('global-drawer');
+  const termsModal = document.getElementById('terms-modal');
+  const termsModalContents = Array.from(document.querySelectorAll('#terms-modal [data-modal-content]'));
   let activeCard = null;
   let activeTutorialIndex = 0;
   let activeTutorialSteps = [];
@@ -50,6 +54,34 @@
   };
   const showCooldownPopup = (message) => {
     window.alert(message);
+  };
+  const openDrawer = () => {
+    if (!globalDrawer || !menuToggle) return;
+    globalDrawer.classList.add('is-open');
+    globalDrawer.setAttribute('aria-hidden', 'false');
+    menuToggle.setAttribute('aria-expanded', 'true');
+  };
+
+  const closeDrawer = () => {
+    if (!globalDrawer || !menuToggle) return;
+    globalDrawer.classList.remove('is-open');
+    globalDrawer.setAttribute('aria-hidden', 'true');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  };
+
+  const openTermsModal = (target) => {
+    if (!termsModal || termsModalContents.length === 0) return;
+    termsModalContents.forEach((section) => {
+      section.hidden = section.dataset.modalContent !== target;
+    });
+    termsModal.classList.add('is-open');
+    termsModal.setAttribute('aria-hidden', 'false');
+  };
+
+  const closeTermsModal = () => {
+    if (!termsModal) return;
+    termsModal.classList.remove('is-open');
+    termsModal.setAttribute('aria-hidden', 'true');
   };
   const closeModal = () => {
     if (!modal) return;
@@ -122,6 +154,14 @@
     apiKeyInput.focus();
   });
 
+  menuToggle?.addEventListener('click', () => {
+    if (!globalDrawer) return;
+    if (globalDrawer.classList.contains('is-open')) {
+      closeDrawer();
+      return;
+    }
+    openDrawer();
+  });
   const syncPriceFilterFields = () => {
     if (!priceFilterToggle || priceInputs.length === 0) return;
     const enabled = priceFilterToggle.checked;
@@ -294,6 +334,14 @@
     if (event.key !== 'Escape') return;
     if (tutorialOverlay?.classList.contains('is-active')) {
       endTutorial();
+      return;
+    }
+    if (termsModal?.classList.contains('is-open')) {
+      closeTermsModal();
+      return;
+    }
+    if (globalDrawer?.classList.contains('is-open')) {
+      closeDrawer();
     }
   });
 
@@ -417,6 +465,28 @@
     const target = event.target;
     if (!(target instanceof Element)) return;
 
+    const drawerCloseButton = target.closest('[data-drawer-close]');
+    if (drawerCloseButton) {
+      closeDrawer();
+      return;
+    }
+
+    const termsModalTrigger = target.closest('[data-modal-target]');
+    if (termsModalTrigger) {
+      const targetType = termsModalTrigger.dataset.modalTarget;
+      if (targetType === 'terms' || targetType === 'privacy') {
+        openTermsModal(targetType);
+        closeDrawer();
+        return;
+      }
+    }
+
+    const menuAction = target.closest('[data-menu-action]');
+    if (menuAction?.dataset.menuAction === 'tutorial' && tutorialStart) {
+      tutorialStart.click();
+      closeDrawer();
+      return;
+    }
     const actionButton = target.closest('[data-action]');
     if (actionButton) {
       const action = actionButton.dataset.action;
@@ -517,6 +587,9 @@
 
     if (target.closest('[data-modal-close]')) {
       closeModal();
+    }
+    if (target.closest('[data-terms-modal-close]')) {
+      closeTermsModal();
     }
     if (target.closest('[data-settings-close]')) {
       closeSettingsModal();
