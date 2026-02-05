@@ -483,8 +483,8 @@
     if (termsModalTrigger) {
       const targetType = termsModalTrigger.dataset.modalTarget;
       if (targetType === 'terms' || targetType === 'privacy') {
-        openTermsModal(targetType);
         closeDrawer();
+        openTermsModal(targetType);
         return;
       }
     }
