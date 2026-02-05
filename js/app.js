@@ -48,6 +48,9 @@
     const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
     descriptionEl.innerHTML = `${previousHtml}<p class="rank-card__description--error">AI説明の生成に失敗しました。</p><p class="rank-card__description--error-detail">${safeMessage}</p>`;
   };
+  const showCooldownPopup = (message) => {
+    window.alert(message);
+  };
   const closeModal = () => {
     if (!modal) return;
     modal.classList.remove('is-open');
@@ -472,6 +475,11 @@
         })
           .then(async (response) => {
             const data = await response.json().catch(() => ({}));
+            if (response.status === 429 && data.message) {
+              const cooldownError = new Error(data.message);
+              cooldownError.isCooldown = true;
+              throw cooldownError;
+            }
             if (!response.ok || !data.success) {
               const baseMessage =
                 data.message || `AI説明の生成に失敗しました。(HTTP ${response.status})`;
@@ -490,6 +498,14 @@
           .catch((error) => {
             const message =
               error instanceof Error ? error.message : 'AI説明の生成に失敗しました。';
+            if (error instanceof Error && error.isCooldown) {
+              if (descriptionEl) {
+                descriptionEl.dataset.description = previousDescription;
+                descriptionEl.innerHTML = previousHtml;
+              }
+              showCooldownPopup(message);
+              return;
+            }
             renderAiError(descriptionEl, previousHtml, previousDescription, message);
           })
           .finally(() => {
