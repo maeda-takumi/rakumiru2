@@ -22,7 +22,31 @@ function fetchActiveAiPrompt(PDO $pdo): ?string {
   $stmt = $pdo->prepare('SELECT prompt FROM ai_modes WHERE is_active = 1 ORDER BY id ASC LIMIT 1');
   $stmt->execute();
   $prompt = $stmt->fetchColumn();
-  return is_string($prompt) && trim($prompt) !== '' ? $prompt : null;
+  return normalizeAiPrompt($prompt);
+}
+
+function normalizeAiPrompt($prompt): ?string {
+  if (!is_string($prompt)) {
+    return null;
+  }
+  $trimmed = trim($prompt);
+  if ($trimmed === '' || mb_strtolower($trimmed) === 'none') {
+    return null;
+  }
+  return $trimmed;
+}
+
+function fetchUserAiPrompt(PDO $pdo, int $userId): ?string {
+  $stmt = $pdo->prepare(
+    'SELECT am.prompt
+     FROM users u
+     JOIN ai_modes am ON u.ai_mode_id = am.id
+     WHERE u.id = :user_id AND am.is_active = 1
+     LIMIT 1'
+  );
+  $stmt->execute(['user_id' => $userId]);
+  $prompt = $stmt->fetchColumn();
+  return normalizeAiPrompt($prompt);
 }
 // function fetchUserGeminiApiKey(PDO $pdo, int $userId): ?string {
 //   $stmt = $pdo->prepare('SELECT gemini_api_key FROM users WHERE id = :id LIMIT 1');

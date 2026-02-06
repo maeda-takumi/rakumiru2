@@ -62,6 +62,10 @@ $minPrice = null;
 $maxPrice = null;
 $priceFilterEnabled = false;
 $settingsError = null;
+$aiModes = [];
+$userAiModeId = null;
+$aiModeRequired = false;
+$aiModeNotice = null;
 $defaultSettings = [
   'genre_ids' => [100804, 100533, 558944, 215783, 100316, 100939, 503190],
   'sort_key' => 'rank',
@@ -98,7 +102,11 @@ $genreData = [];
 
 if ($pdo) {
   $hasActive = columnExists($pdo, 'users', 'active');
+  $hasAiModeId = columnExists($pdo, 'users', 'ai_mode_id');
   $selectFields = $hasActive ? 'id, active' : 'id';
+  if ($hasAiModeId) {
+    $selectFields .= ', ai_mode_id';
+  }
   $stmt = $pdo->prepare(sprintf('SELECT %s FROM users WHERE line_user_id = :line_user_id LIMIT 1', $selectFields));
   $stmt->execute(['line_user_id' => $_SESSION['line_user_id']]);
   $userRow = $stmt->fetch();
@@ -111,6 +119,24 @@ if ($pdo) {
 
   $genres = $pdo->query("SELECT genre_id, genre_name FROM genres WHERE depth = 0 AND is_active = 1 ORDER BY genre_name")->fetchAll();
 
+  $aiModeRows = $pdo->query('SELECT id, mode_name, prompt FROM ai_modes WHERE is_active = 1 ORDER BY id ASC')->fetchAll();
+  $selectableModeIds = [];
+  foreach ($aiModeRows as $row) {
+    $prompt = is_string($row['prompt']) ? trim($row['prompt']) : '';
+    $isSelectable = $prompt !== '' && mb_strtolower($prompt) !== 'none';
+    if ($isSelectable) {
+      $selectableModeIds[] = (int) $row['id'];
+    }
+    $aiModes[] = [
+      'id' => (int) $row['id'],
+      'mode_name' => $row['mode_name'],
+      'selectable' => $isSelectable,
+    ];
+  }
+  $aiModeRequired = $userId && $hasAiModeId && !in_array((int) $userAiModeId, $selectableModeIds, true);
+  if ($aiModeRequired && !$selectableModeIds) {
+    $aiModeNotice = '現在選択できるAIモードがありません。';
+  }
   foreach ($genres as $genre) {
     $genreMap[(int) $genre['genre_id']] = $genre['genre_name'];
   }
@@ -637,6 +663,39 @@ include __DIR__ . '/header.php';
         <button type="submit" class="modal__button" name="save_settings" value="1">保存</button>
       </div>
     </form>
+  </div>
+</div>
+<div class="modal" id="ai-mode-modal" aria-hidden="true">
+  <div class="modal__overlay" data-ai-mode-close></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="ai-mode-modal-title">
+    <div class="modal__header">
+      <h3 id="ai-mode-modal-title">AIモード設定</h3>
+      <button type="button" class="modal__close" data-ai-mode-close aria-label="閉じる">×</button>
+    </div>
+    <div class="modal__field">
+      <label for="ai-mode-select">AIモード</label>
+      <select id="ai-mode-select">
+        <option value="">選択してください</option>
+        <?php foreach ($aiModes as $mode): ?>
+          <?php
+            $modeId = (int) $mode['id'];
+            $isSelected = $mode['selectable'] && $userAiModeId !== null && $modeId === (int) $userAiModeId;
+            $label = $mode['mode_name'] . ($mode['selectable'] ? '' : '（COMING SOON）');
+          ?>
+          <option value="<?= $modeId ?>" <?= $mode['selectable'] ? '' : 'disabled' ?> <?= $isSelected ? 'selected' : '' ?>>
+            <?= htmlspecialchars($label, ENT_QUOTES, 'UTF-8') ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+    <?php if ($aiModeNotice): ?>
+      <p class="modal__note"><?= htmlspecialchars($aiModeNotice, ENT_QUOTES, 'UTF-8') ?></p>
+    <?php endif; ?>
+    <div class="modal__actions">
+      <button type="button" class="modal__button modal__button--ghost" data-ai-mode-close>キャンセル</button>
+      <button type="button" class="modal__button" id="ai-mode-save">保存</button>
+    </div>
+    <p class="modal__status" id="ai-mode-status" aria-live="polite"></p>
   </div>
 </div>
 <div class="modal" id="description-modal" aria-hidden="true">

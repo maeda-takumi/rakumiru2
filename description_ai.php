@@ -114,11 +114,10 @@ try {
   if (!empty($item['captured_date'])) {
     $infoLines[] = '取得日: ' . $item['captured_date'];
   }
-  $promptTemplate = fetchActiveAiPrompt($pdo);
+  $promptTemplate = fetchUserAiPrompt($pdo, $userId);
   if (!$promptTemplate) {
-    throw new RuntimeException('AIプロンプトが設定されていません。');
+    throw new RuntimeException('AIモードを選択してください。');
   }
-
   $itemInfo = implode("\n", $infoLines);
   if (strpos($promptTemplate, '{{item_info}}') !== false) {
     $prompt = str_replace('{{item_info}}', $itemInfo, $promptTemplate);

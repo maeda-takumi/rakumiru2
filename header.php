@@ -21,8 +21,9 @@ $showTutorialButton = basename($_SERVER['SCRIPT_NAME']) === 'index.php';
 <?php
 $basePath = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/\\');
 $basePath = $basePath === '' ? '/' : $basePath . '/';
+$aiModeRequired = $aiModeRequired ?? false;
 ?>
-<body data-api-base="<?= htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') ?>">
+<body data-api-base="<?= htmlspecialchars($basePath, ENT_QUOTES, 'UTF-8') ?>" data-ai-mode-required="<?= $aiModeRequired ? 'true' : 'false' ?>">
   <header class="app-header">
     <div class="container">
       <div class="app-header__inner">
@@ -63,9 +64,9 @@ $basePath = $basePath === '' ? '/' : $basePath . '/';
       <div class="global-drawer__list">
         <?php if ($showTutorialButton): ?>
           <button class="header-icon-button global-drawer__item" type="button" id="tutorial-start">チュートリアル</button>
+          <button class="global-drawer__item" type="button" data-modal-target="mode">AIモード設定</button>
           <button class="global-drawer__item" type="button" data-modal-target="terms">利用規約</button>
           <button class="global-drawer__item" type="button" data-modal-target="privacy">プライバシーポリシー</button>
-          <button class="global-drawer__item" type="button" data-modal-target="mode">AIモード設定</button>
         <?php endif; ?>
       </div>
     </aside>

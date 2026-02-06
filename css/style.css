@@ -790,6 +790,13 @@ h2 {
   border: 1px solid rgba(15, 23, 42, 0.1);
   font-size: 0.95rem;
 }
+.modal__field select {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  font-size: 0.95rem;
+  background: #fff;
+}
 
 .modal__close {
   border: none;
@@ -1129,6 +1136,11 @@ h2 {
   font-size: 0.85rem;
   color: var(--muted);
   min-height: 1em;
+}
+.modal__note {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
 }
 .sort_label{ 
     min-width: 35px;

@@ -12,6 +12,10 @@
   const apiKeyInput = document.getElementById('api-key-input');
   const apiKeySave = document.getElementById('api-key-save');
   const apiKeyStatus = document.getElementById('api-key-status');
+  const aiModeModal = document.getElementById('ai-mode-modal');
+  const aiModeSelect = document.getElementById('ai-mode-select');
+  const aiModeSave = document.getElementById('ai-mode-save');
+  const aiModeStatus = document.getElementById('ai-mode-status');
   const scrollTopButton = document.getElementById('scroll-top-button');
   const priceFilterToggle = document.getElementById('price-filter-enabled');
   const priceInputs = Array.from(document.querySelectorAll('[data-price-input]'));
@@ -111,6 +115,24 @@
     apiKeyStatus.textContent = '';
     apiKeyInput.value = '';
   };
+  const openAiModeModal = () => {
+    if (!aiModeModal) return;
+    closeDrawer();
+    aiModeModal.classList.add('is-open');
+    aiModeModal.setAttribute('aria-hidden', 'false');
+    if (aiModeStatus) {
+      aiModeStatus.textContent = '';
+    }
+    if (aiModeSelect instanceof HTMLElement) {
+      aiModeSelect.focus();
+    }
+  };
+
+  const closeAiModeModal = () => {
+    if (!aiModeModal) return;
+    aiModeModal.classList.remove('is-open');
+    aiModeModal.setAttribute('aria-hidden', 'true');
+  };
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const tutorialStorageKey = 'rakumiruTutorialSeen';
   const canUseStorage = (() => {
@@ -170,6 +192,9 @@
     }
     openDrawer();
   });
+  if (document.body?.dataset.aiModeRequired === 'true') {
+    requestAnimationFrame(openAiModeModal);
+  }
   const syncPriceFilterFields = () => {
     if (!priceFilterToggle || priceInputs.length === 0) return;
     const enabled = priceFilterToggle.checked;
@@ -349,6 +374,10 @@
       closeTermsModal();
       return;
     }
+    if (aiModeModal?.classList.contains('is-open')) {
+      closeAiModeModal();
+      return;
+    }
     if (globalDrawer?.classList.contains('is-open')) {
       closeDrawer();
     }
@@ -483,6 +512,10 @@
     const termsModalTrigger = target.closest('[data-modal-target]');
     if (termsModalTrigger) {
       const targetType = termsModalTrigger.dataset.modalTarget;
+      if (targetType === 'mode') {
+        openAiModeModal();
+        return;
+      }
       if (targetType === 'terms' || targetType === 'privacy') {
         openTermsModal(targetType);
         return;
@@ -602,6 +635,9 @@
     if (target.closest('[data-settings-close]')) {
       closeSettingsModal();
     }
+    if (target.closest('[data-ai-mode-close]')) {
+      closeAiModeModal();
+    }
     if (target.closest('[data-api-key-close]')) {
       closeApiKeyModal();
     }
@@ -643,6 +679,33 @@
       modalStatus.textContent = error instanceof Error ? error.message : '保存に失敗しました。';
     } finally {
       modalSave.disabled = false;
+    }
+  });
+  aiModeSave?.addEventListener('click', async () => {
+    if (!aiModeSelect || !aiModeSave || !aiModeStatus) return;
+    const selectedValue = aiModeSelect.value;
+    if (!selectedValue) {
+      aiModeStatus.textContent = 'AIモードを選択してください。';
+      return;
+    }
+    aiModeSave.disabled = true;
+    aiModeStatus.textContent = '保存中...';
+    try {
+      const response = await fetch(`${apiBase}ai_mode_save.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ ai_mode_id: selectedValue }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '保存に失敗しました。');
+      }
+      aiModeStatus.textContent = '保存しました。';
+      setTimeout(closeAiModeModal, 600);
+    } catch (error) {
+      aiModeStatus.textContent = error instanceof Error ? error.message : '保存に失敗しました。';
+    } finally {
+      aiModeSave.disabled = false;
     }
   });
   apiKeySave?.addEventListener('click', async () => {
