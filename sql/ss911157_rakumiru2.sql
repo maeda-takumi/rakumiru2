@@ -69,6 +69,23 @@ CREATE TABLE `item_descriptions` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- --------------------------------------------------------
+--
+-- テーブルの構造 `ai_modes`
+--
+
+CREATE TABLE `ai_modes` (
+  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `mode_name` varchar(128) NOT NULL,
+  `prompt` mediumtext NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_ai_modes_name` (`mode_name`),
+  KEY `idx_ai_modes_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 --

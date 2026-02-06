@@ -65,6 +65,7 @@ $basePath = $basePath === '' ? '/' : $basePath . '/';
           <button class="header-icon-button global-drawer__item" type="button" id="tutorial-start">チュートリアル</button>
           <button class="global-drawer__item" type="button" data-modal-target="terms">利用規約</button>
           <button class="global-drawer__item" type="button" data-modal-target="privacy">プライバシーポリシー</button>
+          <button class="global-drawer__item" type="button" data-modal-target="mode">AIモード設定</button>
         <?php endif; ?>
       </div>
     </aside>

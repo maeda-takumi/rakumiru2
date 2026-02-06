@@ -18,6 +18,12 @@ function fetchUserId(PDO $pdo, string $lineUserId): ?int {
   return $userId ? (int) $userId : null;
 }
 
+function fetchActiveAiPrompt(PDO $pdo): ?string {
+  $stmt = $pdo->prepare('SELECT prompt FROM ai_modes WHERE is_active = 1 ORDER BY id ASC LIMIT 1');
+  $stmt->execute();
+  $prompt = $stmt->fetchColumn();
+  return is_string($prompt) && trim($prompt) !== '' ? $prompt : null;
+}
 // function fetchUserGeminiApiKey(PDO $pdo, int $userId): ?string {
 //   $stmt = $pdo->prepare('SELECT gemini_api_key FROM users WHERE id = :id LIMIT 1');
 //   $stmt->execute(['id' => $userId]);
