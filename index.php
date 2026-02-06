@@ -673,7 +673,10 @@ include __DIR__ . '/header.php';
       <button type="button" class="modal__close" data-ai-mode-close aria-label="閉じる">×</button>
     </div>
     <div class="modal__field">
-      <label for="ai-mode-select">AIモード</label>
+      <p class="modal__note modal__note--ai">
+        投稿文を生成するAIモードを選択します。<br>
+        モードによって口調等が変わります。
+      </p>
       <select id="ai-mode-select">
         <option value="">選択してください</option>
         <?php foreach ($aiModes as $mode): ?>

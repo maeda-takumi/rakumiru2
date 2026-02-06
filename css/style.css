@@ -1142,6 +1142,9 @@ h2 {
   font-size: 0.85rem;
   color: var(--muted);
 }
+.modal__note--ai {
+  margin: 0;
+}
 .sort_label{ 
     min-width: 35px;
 }

@@ -206,6 +206,11 @@
 
   const buildTutorialSteps = () => [
     {
+      selector: '#menu-toggle',
+      text: 'ここからメニューを開けます。',
+      scope: 'document',
+    },
+    {
       selector: '#settings-open',
       text: '⚙設定ボタンからジャンルや絞り込み条件を変更できます。',
       scope: 'document',
