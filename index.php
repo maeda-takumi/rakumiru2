@@ -716,5 +716,20 @@ include __DIR__ . '/header.php';
     <p class="modal__status" id="description-modal-status" aria-live="polite"></p>
   </div>
 </div>
+<div class="modal" id="ai-error-modal" aria-hidden="true">
+  <div class="modal__overlay" data-ai-error-close></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="ai-error-modal-title">
+    <div class="modal__header">
+      <h3 id="ai-error-modal-title">AI生成エラー</h3>
+      <button type="button" class="modal__close" data-ai-error-close aria-label="閉じる">×</button>
+    </div>
+    <p class="modal__status modal__status--error" id="ai-error-message">AI説明の生成に失敗しました。</p>
+    <p class="modal__note" id="ai-error-code">エラー番号: UNKNOWN_ERROR</p>
+    <p class="modal__note" id="ai-error-reason">時間をおいて再度お試しください。</p>
+    <div class="modal__actions">
+      <button type="button" class="modal__button" data-ai-error-close>閉じる</button>
+    </div>
+  </div>
+</div>
 <?php
 include __DIR__ . '/footer.php';

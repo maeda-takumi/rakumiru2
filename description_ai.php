@@ -7,15 +7,41 @@ session_start();
 
 header('Content-Type: application/json; charset=UTF-8');
 
+function saveGeminiErrorLog(int $userId, string $itemCode, string $reason, ?int $httpStatus = null, ?string $responseBody = null): void {
+  $logDir = __DIR__ . '/logs';
+  if (!is_dir($logDir)) {
+    @mkdir($logDir, 0775, true);
+  }
+  if (!is_dir($logDir)) {
+    return;
+  }
+
+  $logFile = $logDir . '/gemini_error_' . date('Ymd') . '.log';
+  $lines = [
+    'timestamp=' . date('c'),
+    'user_id=' . $userId,
+    'item_code=' . $itemCode,
+    'reason=' . $reason,
+  ];
+  if ($httpStatus !== null) {
+    $lines[] = 'http_status=' . $httpStatus;
+  }
+  if ($responseBody !== null) {
+    $lines[] = 'response_body=' . $responseBody;
+  }
+  $logEntry = implode("\n", $lines) . "\n----\n";
+  @file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
+}
+
 if (empty($_SESSION['line_user_id'])) {
   http_response_code(403);
-  echo json_encode(['success' => false, 'message' => '認証が必要です。'], JSON_UNESCAPED_UNICODE);
+  echo json_encode(['success' => false, 'message' => '認証が必要です。', 'error_code' => 'AUTH_REQUIRED'], JSON_UNESCAPED_UNICODE);
   exit;
 }
 
 if (empty($_SESSION['password_authenticated'])) {
   http_response_code(403);
-  echo json_encode(['success' => false, 'message' => 'パスワードの確認が必要です。'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'ユーザー情報が取得できません。', 'error_code' => 'USER_NOT_FOUND'], JSON_UNESCAPED_UNICODE);
   exit;
 }
 $itemCode = filter_input(INPUT_POST, 'item_code');
@@ -51,6 +77,7 @@ try {
       [
         'success' => false,
         'message' => "クールダウン中です。あと{$remainingSeconds}秒で再生成できます。",
+        'error_code' => 'COOL_DOWN',
         'remaining_seconds' => $remainingSeconds,
       ],
       JSON_UNESCAPED_UNICODE
@@ -62,7 +89,7 @@ try {
   if ($apiKey === '') {
     http_response_code(400);
     echo json_encode(
-      ['success' => false, 'message' => 'APIキーが未設定です。API_KEYを確認してください。'],
+      ['success' => false, 'message' => 'APIキーが未設定です。API_KEYを確認してください。', 'error_code' => 'API_KEY_MISSING'],
       JSON_UNESCAPED_UNICODE
     );
     exit;
@@ -83,7 +110,7 @@ try {
 
   if (!$item) {
     http_response_code(404);
-    echo json_encode(['success' => false, 'message' => '商品情報が取得できません。'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => '商品情報が取得できません。', 'error_code' => 'ITEM_NOT_FOUND'], JSON_UNESCAPED_UNICODE);
     exit;
   }
 
@@ -116,7 +143,7 @@ try {
   }
   $promptTemplate = fetchUserAiPrompt($pdo, $userId);
   if (!$promptTemplate) {
-    throw new RuntimeException('AIモードを選択してください。');
+    throw new RuntimeException('AIモードを選択してください。', 1001);
   }
   $itemInfo = implode("\n", $infoLines);
   if (strpos($promptTemplate, '{{item_info}}') !== false) {
@@ -164,28 +191,30 @@ try {
   if ($responseBody === false) {
     $errorMessage = curl_error($ch);
     curl_close($ch);
-    throw new RuntimeException($errorMessage ?: 'Gemini APIとの通信に失敗しました。');
+    saveGeminiErrorLog((int) $userId, (string) $itemCode, $errorMessage ?: 'curl_exec returned false');
+    throw new RuntimeException($errorMessage ?: 'Gemini APIとの通信に失敗しました。', 2001);
   }
   curl_close($ch);
 
   if ($responseCode < 200 || $responseCode >= 300) {
+    saveGeminiErrorLog((int) $userId, (string) $itemCode, 'Gemini API HTTP error', $responseCode, is_string($responseBody) ? $responseBody : null);
     $detail = '';
     if (is_string($responseBody) && $responseBody !== '') {
       $detail = 'レスポンス: ' . mb_substr($responseBody, 0, 300);
     }
     $status = 'HTTP ' . $responseCode;
     $message = 'Gemini APIの呼び出しに失敗しました。' . ($detail ? " ({$status}) {$detail}" : " ({$status})");
-    throw new RuntimeException($message);
+    throw new RuntimeException($message, 2001);
   }
 
   $responseData = json_decode($responseBody, true);
   if (!is_array($responseData)) {
-    throw new RuntimeException('Gemini APIの応答を解析できませんでした。');
+    throw new RuntimeException('Gemini APIの応答を解析できませんでした。', 2002);
   }
 
   $description = trim((string) ($responseData['candidates'][0]['content']['parts'][0]['text'] ?? ''));
   if ($description === '') {
-    throw new RuntimeException('AI説明が取得できませんでした。');
+    throw new RuntimeException('AI説明が取得できませんでした。', 2003);
   }
 
   saveItemDescription($pdo, $userId, $itemCode, $description);
@@ -193,6 +222,16 @@ try {
   echo json_encode(['success' => true, 'description' => $description], JSON_UNESCAPED_UNICODE);
 } catch (Throwable $e) {
   http_response_code(500);
+  $errorCode = 'AI_GENERATION_FAILED';
+  if ($e->getCode() === 1001) {
+    $errorCode = 'AI_MODE_REQUIRED';
+  } elseif ($e->getCode() === 2001) {
+    $errorCode = 'AI_PROVIDER_ERROR';
+  } elseif ($e->getCode() === 2002) {
+    $errorCode = 'AI_RESPONSE_PARSE_ERROR';
+  } elseif ($e->getCode() === 2003) {
+    $errorCode = 'AI_EMPTY_RESPONSE';
+  }
   echo json_encode(
     [
       'success' => false,

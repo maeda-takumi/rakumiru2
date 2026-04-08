@@ -33,6 +33,10 @@
   const globalDrawer = document.getElementById('global-drawer');
   const termsModal = document.getElementById('terms-modal');
   const termsModalContents = Array.from(document.querySelectorAll('#terms-modal [data-modal-content]'));
+  const aiErrorModal = document.getElementById('ai-error-modal');
+  const aiErrorMessage = document.getElementById('ai-error-message');
+  const aiErrorCode = document.getElementById('ai-error-code');
+  const aiErrorReason = document.getElementById('ai-error-reason');
   let activeCard = null;
   let activeTutorialIndex = 0;
   let activeTutorialSteps = [];
@@ -47,14 +51,43 @@
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
-  const renderAiError = (descriptionEl, previousHtml, previousDescription, message) => {
-    if (!descriptionEl) {
-      window.alert(message);
+  const resolveAiErrorReason = (errorCode) => {
+    const errorReasons = {
+      AUTH_REQUIRED: 'ログイン状態が切れている可能性があります。再ログインしてください。',
+      PASSWORD_REQUIRED: 'パスワード確認が必要です。認証後に再度お試しください。',
+      ITEM_CODE_REQUIRED: '商品情報が不足しています。ページを再読み込みしてからお試しください。',
+      USER_NOT_FOUND: 'ユーザー情報の取得に失敗しました。時間をおいて再度お試しください。',
+      COOL_DOWN: '短時間で連続実行されています。しばらく待ってから再実行してください。',
+      API_KEY_MISSING: 'APIキーが未設定です。設定画面からAPIキーを登録してください。',
+      ITEM_NOT_FOUND: '対象の商品情報が見つかりませんでした。別の商品でお試しください。',
+      AI_MODE_REQUIRED: 'AIモードが未設定です。メニューの「AIモード設定」を保存してください。',
+      AI_PROVIDER_ERROR: 'AIサービス側でエラーが発生しています。時間をおいて再実行してください。',
+      AI_RESPONSE_PARSE_ERROR: 'AIの応答形式を読み取れませんでした。再度お試しください。',
+      AI_EMPTY_RESPONSE: 'AIから投稿文が返ってきませんでした。再度お試しください。',
+      AI_GENERATION_FAILED: 'AI説明の生成に失敗しました。時間をおいて再度お試しください。',
+      NETWORK_ERROR: '通信エラーが発生しました。ネットワーク状態を確認して再実行してください。',
+      UNKNOWN_ERROR: '予期しないエラーが発生しました。時間をおいて再度お試しください。',
+    };
+    return errorReasons[errorCode] ?? errorReasons.UNKNOWN_ERROR;
+  };
+  const showAiErrorPopup = (errorCode, fallbackMessage) => {
+    const reasonText = resolveAiErrorReason(errorCode);
+    if (!aiErrorModal || !aiErrorMessage || !aiErrorReason || !aiErrorCode) {
+      window.alert(reasonText || fallbackMessage || 'AI説明の生成に失敗しました。');
       return;
     }
-    descriptionEl.dataset.description = previousDescription;
-    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>');
-    descriptionEl.innerHTML = `${previousHtml}<p class="rank-card__description--error">AI説明の生成に失敗しました。</p><p class="rank-card__description--error-detail">${safeMessage}</p>`;
+    aiErrorMessage.textContent = fallbackMessage || 'AI説明の生成に失敗しました。';
+    aiErrorCode.textContent = `エラー番号: ${errorCode || 'UNKNOWN_ERROR'}`;
+    aiErrorReason.textContent = reasonText;
+    aiErrorModal.classList.add('is-open');
+    aiErrorModal.setAttribute('aria-hidden', 'false');
+  };
+  const renderAiError = (descriptionEl, previousHtml, previousDescription, errorCode, message) => {
+    if (descriptionEl) {
+      descriptionEl.dataset.description = previousDescription;
+      descriptionEl.innerHTML = previousHtml;
+    }
+    showAiErrorPopup(errorCode, message);
   };
   const showCooldownPopup = (message) => {
     window.alert(message);
@@ -94,6 +127,11 @@
     if (!termsModal) return;
     termsModal.classList.remove('is-open');
     termsModal.setAttribute('aria-hidden', 'true');
+  };
+  const closeAiErrorModal = () => {
+    if (!aiErrorModal) return;
+    aiErrorModal.classList.remove('is-open');
+    aiErrorModal.setAttribute('aria-hidden', 'true');
   };
   const closeModal = () => {
     if (!modal) return;
@@ -591,13 +629,15 @@
             if (response.status === 429 && data.message) {
               const cooldownError = new Error(data.message);
               cooldownError.isCooldown = true;
+              cooldownError.errorCode = data.error_code || 'COOL_DOWN';
               throw cooldownError;
             }
             if (!response.ok || !data.success) {
               const baseMessage =
                 data.message || `AI説明の生成に失敗しました。(HTTP ${response.status})`;
-              const detailMessage = data.detail ? `${baseMessage}\n${data.detail}` : baseMessage;
-              throw new Error(detailMessage);
+              const apiError = new Error(baseMessage);
+              apiError.errorCode = data.error_code || 'AI_GENERATION_FAILED';
+              throw apiError;
             }
             const description = (data.description ?? '').trim();
             if (!description) {
@@ -611,6 +651,8 @@
           .catch((error) => {
             const message =
               error instanceof Error ? error.message : 'AI説明の生成に失敗しました。';
+            const errorCode =
+              error instanceof Error && error.errorCode ? error.errorCode : 'NETWORK_ERROR';
             if (error instanceof Error && error.isCooldown) {
               if (descriptionEl) {
                 descriptionEl.dataset.description = previousDescription;
@@ -619,7 +661,7 @@
               showCooldownPopup(message);
               return;
             }
-            renderAiError(descriptionEl, previousHtml, previousDescription, message);
+            renderAiError(descriptionEl, previousHtml, previousDescription, errorCode, message);
           })
           .finally(() => {
             actionButton.removeAttribute('aria-busy');
@@ -633,6 +675,9 @@
     }
     if (target.closest('[data-terms-modal-close]')) {
       closeTermsModal();
+    }
+    if (target.closest('[data-ai-error-close]')) {
+      closeAiErrorModal();
     }
     if (target.closest('[data-settings-close]')) {
       closeSettingsModal();
