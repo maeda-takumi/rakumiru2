@@ -203,4 +203,4 @@ require_once __DIR__ . '/header.php';
 </section>
 
 <script src="../js/admin.js?v=<?= time() ?>"></script>
-<?php require_once __DIR__ . '/../footer.php'; ?>
+<?php require_once __DIR__ . '/footer.php'; ?>

@@ -192,9 +192,6 @@
     }
     openDrawer();
   });
-  if (document.body?.dataset.aiModeRequired === 'true') {
-    requestAnimationFrame(openAiModeModal);
-  }
   const syncPriceFilterFields = () => {
     if (!priceFilterToggle || priceInputs.length === 0) return;
     const enabled = priceFilterToggle.checked;
