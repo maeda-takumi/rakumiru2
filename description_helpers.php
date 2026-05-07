@@ -18,6 +18,21 @@ function fetchUserId(PDO $pdo, string $lineUserId): ?int {
   return $userId ? (int) $userId : null;
 }
 
+function getGeminiModelName(): string {
+  if (defined('GEMINI_MODEL') && trim((string) GEMINI_MODEL) !== '') {
+    return trim((string) GEMINI_MODEL);
+  }
+  return 'gemini-3.1-flash-lite-preview';
+}
+
+function buildGeminiGenerateContentUrl(string $model, string $apiKey): string {
+  $normalizedModel = preg_replace('#^models/#', '', trim($model));
+  if (!is_string($normalizedModel) || $normalizedModel === '') {
+    $normalizedModel = getGeminiModelName();
+  }
+
+  return 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($normalizedModel) . ':generateContent?key=' . urlencode($apiKey);
+}
 function fetchActiveAiPrompt(PDO $pdo): ?string {
   $stmt = $pdo->prepare('SELECT prompt FROM ai_modes WHERE is_active = 1 ORDER BY id ASC LIMIT 1');
   $stmt->execute();

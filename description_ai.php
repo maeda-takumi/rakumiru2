@@ -159,11 +159,8 @@ try {
   }
 
 
-
-
-  $model = 'gemini-3.1-flash-lite-preview';
-
-  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent?key=' . urlencode($apiKey);
+  $model = getGeminiModelName();
+  $apiUrl = buildGeminiGenerateContentUrl($model, $apiKey);
 
 
   $payload = [

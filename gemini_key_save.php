@@ -50,8 +50,8 @@ try {
     ],
   ];
 
-  $model = 'models/gemini-2.5-flash-lite';
-  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode($apiKey);
+  $model = getGeminiModelName();
+  $apiUrl = buildGeminiGenerateContentUrl($model, $apiKey);
   $ch = curl_init($apiUrl);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_POST, true);
