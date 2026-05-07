@@ -7,7 +7,7 @@ session_start();
 
 header('Content-Type: application/json; charset=UTF-8');
 
-function saveGeminiErrorLog(int $userId, string $itemCode, string $reason, ?int $httpStatus = null, ?string $responseBody = null): void {
+function saveGeminiErrorLog(int $userId, string $itemCode, string $reason, ?int $httpStatus = null, ?string $responseBody = null, ?string $model = null, ?float $elapsedSeconds = null): void {
   $logDir = __DIR__ . '/logs';
   if (!is_dir($logDir)) {
     @mkdir($logDir, 0775, true);
@@ -23,6 +23,12 @@ function saveGeminiErrorLog(int $userId, string $itemCode, string $reason, ?int 
     'item_code=' . $itemCode,
     'reason=' . $reason,
   ];
+  if ($model !== null && $model !== '') {
+    $lines[] = 'model=' . $model;
+  }
+  if ($elapsedSeconds !== null) {
+    $lines[] = 'elapsed_seconds=' . number_format($elapsedSeconds, 3, '.', '');
+  }
   if ($httpStatus !== null) {
     $lines[] = 'http_status=' . $httpStatus;
   }
@@ -157,7 +163,8 @@ try {
 
   $model = 'gemma-4-26b-a4b-it';
 
-  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
+  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent?key=' . urlencode($apiKey);
+
 
   $payload = [
     'contents' => [
@@ -181,20 +188,28 @@ try {
   curl_setopt($ch, CURLOPT_POST, true);
   curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
   curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
-  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-  curl_setopt($ch, CURLOPT_TIMEOUT, 60);
+  $connectTimeout = defined('GEMINI_CONNECT_TIMEOUT_SECONDS')
+    ? max(1, (int) GEMINI_CONNECT_TIMEOUT_SECONDS)
+    : 10;
+  $requestTimeout = defined('GEMINI_REQUEST_TIMEOUT_SECONDS')
+    ? max($connectTimeout, (int) GEMINI_REQUEST_TIMEOUT_SECONDS)
+    : 25;
+  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $connectTimeout);
+  curl_setopt($ch, CURLOPT_TIMEOUT, $requestTimeout);
+  $requestStartedAt = microtime(true);
   $responseBody = curl_exec($ch);
+  $elapsedSeconds = microtime(true) - $requestStartedAt;
   $responseCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
   if ($responseBody === false) {
     $errorMessage = curl_error($ch);
     curl_close($ch);
-    saveGeminiErrorLog((int) $userId, (string) $itemCode, $errorMessage ?: 'curl_exec returned false');
+    saveGeminiErrorLog((int) $userId, (string) $itemCode, $errorMessage ?: 'curl_exec returned false', null, null, $model, $elapsedSeconds);
     throw new RuntimeException($errorMessage ?: 'Gemini APIとの通信に失敗しました。', 2001);
   }
   curl_close($ch);
 
   if ($responseCode < 200 || $responseCode >= 300) {
-    saveGeminiErrorLog((int) $userId, (string) $itemCode, 'Gemini API HTTP error', $responseCode, is_string($responseBody) ? $responseBody : null);
+    saveGeminiErrorLog((int) $userId, (string) $itemCode, 'Gemini API HTTP error', $responseCode, is_string($responseBody) ? $responseBody : null, $model, $elapsedSeconds);
     $detail = '';
     if (is_string($responseBody) && $responseBody !== '') {
       $detail = 'レスポンス: ' . mb_substr($responseBody, 0, 300);
