@@ -155,9 +155,10 @@ try {
 
 
 
+  $model = 'gemma-4-26b-a4b-it';
 
-  $model = 'gemma-4-31b-it';
   $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
+
   $payload = [
     'contents' => [
       [
@@ -168,7 +169,7 @@ try {
     ],
     'generationConfig' => [
       'temperature' => 0.7,
-      'maxOutputTokens' => 520,
+      'maxOutputTokens' => 400,
     ],
   ];
 
@@ -180,7 +181,8 @@ try {
   curl_setopt($ch, CURLOPT_POST, true);
   curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
   curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
-  curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+  curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 60);
   $responseBody = curl_exec($ch);
   $responseCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
   if ($responseBody === false) {
