@@ -156,7 +156,7 @@ try {
 
 
 
-  $model = 'gemma-3-4b-it';
+  $model = 'gemma-4-31b-it';
   $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . $model . ':generateContent?key=' . urlencode($apiKey);
   $payload = [
     'contents' => [
