@@ -1,0 +1,98 @@
+timestamp=2026-05-07T07:03:38+09:00
+user_id=65
+item_code=mtgec-beauty:10002278
+reason=Gemini API HTTP error
+http_status=404
+response_body={
+  "error": {
+    "code": 404,
+    "message": "models/gemma-3-4b-it is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+----
+timestamp=2026-05-07T07:12:54+09:00
+user_id=58
+item_code=shopkapalili:10033242
+reason=Gemini API HTTP error
+http_status=404
+response_body={
+  "error": {
+    "code": 404,
+    "message": "models/gemma-3-4b-it is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+----
+timestamp=2026-05-07T07:13:50+09:00
+user_id=65
+item_code=alexandredeparis:10000035
+reason=Gemini API HTTP error
+http_status=404
+response_body={
+  "error": {
+    "code": 404,
+    "message": "models/gemma-3-4b-it is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+----
+timestamp=2026-05-07T07:22:05+09:00
+user_id=58
+item_code=shopkapalili:10033242
+reason=Gemini API HTTP error
+http_status=404
+response_body={
+  "error": {
+    "code": 404,
+    "message": "models/gemma-3-4b-it is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+----
+timestamp=2026-05-07T10:11:30+09:00
+user_id=55
+item_code=scope:10005909
+reason=Gemini API HTTP error
+http_status=404
+response_body={
+  "error": {
+    "code": 404,
+    "message": "models/gemma-3-4b-it is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+----
+timestamp=2026-05-07T14:03:40+09:00
+user_id=29
+item_code=mamegyorai:10046612
+reason=Gemini API HTTP error
+http_status=404
+response_body={
+  "error": {
+    "code": 404,
+    "message": "models/gemma-3-4b-it is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+----
+timestamp=2026-05-07T14:07:16+09:00
+user_id=35
+item_code=emoor:10022915
+reason=Gemini API HTTP error
+http_status=404
+response_body={
+  "error": {
+    "code": 404,
+    "message": "models/gemma-3-4b-it is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.",
+    "status": "NOT_FOUND"
+  }
+}
+
+----

@@ -51,7 +51,7 @@ $aiModeRequired = $aiModeRequired ?? false;
           </button>
         </div>
       </div>
-      <p class="app-header__notice">現在AI生成の不具合により、文章生成が行えません。<br>ご迷惑をおかけしますが、もうしばらくお待ちください。</p>
+      <!-- <p class="app-header__notice">現在AI生成の不具合により、文章生成が行えません。<br>ご迷惑をおかけしますが、もうしばらくお待ちください。</p> -->
       <!-- <p class="brand__subtitle">ランキング変動をスマホで見やすく</p> -->
     </div>
   </header>

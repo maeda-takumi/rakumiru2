@@ -1,0 +1,34 @@
+timestamp=2026-04-28T20:56:36+09:00
+user_id=41
+item_code=rakuten24:10203958
+reason=Operation timed out after 20001 milliseconds with 0 bytes received
+----
+timestamp=2026-04-28T21:33:54+09:00
+user_id=50
+item_code=rakuten24:11388299
+reason=Operation timed out after 20001 milliseconds with 0 bytes received
+----
+timestamp=2026-04-28T21:46:43+09:00
+user_id=50
+item_code=markeys:10016483
+reason=Gemini API HTTP error
+http_status=503
+response_body={
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+
+----
+timestamp=2026-04-28T21:59:14+09:00
+user_id=50
+item_code=markeys:10016481
+reason=Operation timed out after 20001 milliseconds with 0 bytes received
+----
+timestamp=2026-04-28T22:23:57+09:00
+user_id=50
+item_code=beisia:10027711
+reason=Operation timed out after 20001 milliseconds with 0 bytes received
+----

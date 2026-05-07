@@ -1,0 +1,5 @@
+timestamp=2026-04-17T07:03:57+09:00
+user_id=65
+item_code=conodo:10000002
+reason=Operation timed out after 20001 milliseconds with 0 bytes received
+----
