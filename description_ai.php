@@ -161,7 +161,7 @@ try {
 
 
 
-  $model = 'gemma-4-26b-a4b-it';
+  $model = 'gemini-3.1-flash-lite-preview';
 
   $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/' . rawurlencode($model) . ':generateContent?key=' . urlencode($apiKey);
 
@@ -175,8 +175,8 @@ try {
       ],
     ],
     'generationConfig' => [
-      'temperature' => 0.7,
-      'maxOutputTokens' => 400,
+      'temperature' => 0.5,
+      'maxOutputTokens' => 300,
     ],
   ];
 
@@ -193,7 +193,7 @@ try {
     : 10;
   $requestTimeout = defined('GEMINI_REQUEST_TIMEOUT_SECONDS')
     ? max($connectTimeout, (int) GEMINI_REQUEST_TIMEOUT_SECONDS)
-    : 25;
+    : 360;
   curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $connectTimeout);
   curl_setopt($ch, CURLOPT_TIMEOUT, $requestTimeout);
   $requestStartedAt = microtime(true);
