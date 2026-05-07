@@ -156,19 +156,26 @@ try {
 
 
 
-  $model = 'gemma-3-4b-it';
-  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions';
+
   $payload = [
-    'model' => $model,
-    'messages' => [
+    'contents' => [
       [
-        'role' => 'user',
-        'content' => $prompt,
+        'parts' => [
+          ['text' => $prompt],
+        ],
       ],
     ],
-    'temperature' => 0.7,
-    'max_tokens' => 520,
+    'generationConfig' => [
+      'temperature' => 0.7,
+      'maxOutputTokens' => 520,
+    ],
   ];
+
+  // $model = 'models/gemini-2.5-flash-lite';
+  // $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode($apiKey);
+
+  $model = 'models/gemma-3-4b-it';
+  $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/' . $model . ':generateContent?key=' . urlencode($apiKey);
 
   $cooldownMap[$userId] = time();
   $_SESSION['description_ai_last_request_at'] = $cooldownMap;
@@ -176,10 +183,7 @@ try {
   $ch = curl_init($apiUrl);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
   curl_setopt($ch, CURLOPT_POST, true);
-  curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'Content-Type: application/json',
-    'Authorization: Bearer ' . $apiKey,
-  ]);
+  curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
   curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload, JSON_UNESCAPED_UNICODE));
   curl_setopt($ch, CURLOPT_TIMEOUT, 20);
   $responseBody = curl_exec($ch);
@@ -193,7 +197,7 @@ try {
   curl_close($ch);
 
   if ($responseCode < 200 || $responseCode >= 300) {
-    saveGeminiErrorLog((int) $userId, (string) $itemCode, 'Gemini OpenAI-compatible API HTTP error', $responseCode, is_string($responseBody) ? $responseBody : null);
+    saveGeminiErrorLog((int) $userId, (string) $itemCode, 'Gemini API HTTP error', $responseCode, is_string($responseBody) ? $responseBody : null);
     $detail = '';
     if (is_string($responseBody) && $responseBody !== '') {
       $detail = 'レスポンス: ' . mb_substr($responseBody, 0, 300);
@@ -208,7 +212,7 @@ try {
     throw new RuntimeException('Gemini APIの応答を解析できませんでした。', 2002);
   }
 
-  $description = trim((string) ($responseData['choices'][0]['message']['content'] ?? ''));
+  $description = trim((string) ($responseData['candidates'][0]['content']['parts'][0]['text'] ?? ''));
   if ($description === '') {
     throw new RuntimeException('AI説明が取得できませんでした。', 2003);
   }
@@ -233,7 +237,6 @@ try {
       'success' => false,
       'message' => 'AI説明の生成に失敗しました。',
       'detail' => $e->getMessage(),
-      'error_code' => $errorCode,
     ],
     JSON_UNESCAPED_UNICODE
   );
